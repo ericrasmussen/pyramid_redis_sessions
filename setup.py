@@ -8,6 +8,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
+testing_extras = ['pkginfo', 'nose', 'coverage']
+
 setup(name='pyramid_redis_sessions',
       version=__version__,
       description='Pyramid web framework session factory backed by Redis',
@@ -25,7 +27,7 @@ setup(name='pyramid_redis_sessions',
       url='http://pyramid.chromaticleaves.com/docs/pyramid_redis_sessions/',
       license='FreeBSD',
       packages=find_packages(),
-      test_suite='pyramid-redis-sessions.tests',
+      test_suite='pyramid_redis_sessions.tests',
       include_package_data=True,
       zip_safe=False,
       tests_require=['pkginfo', 'nose'],
@@ -34,4 +36,7 @@ setup(name='pyramid_redis_sessions',
         'pyramid>=1.3',
         ],
       entry_points='',
+      extras_require = {
+          'testing':testing_extras,
+          },
 )
