@@ -176,6 +176,8 @@ def RedisSessionFactory(
       ``unix_socket_path``
     """
 
+    port = int(port)
+
     def factory(request, new_session_id=get_unique_session_id):
         # note: will raise ConnectionError if connection is not established
         redis = getattr(request.registry, '_redis_sessions', None)
