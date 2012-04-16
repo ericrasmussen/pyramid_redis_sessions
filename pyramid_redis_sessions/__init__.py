@@ -26,6 +26,7 @@ from pyramid.session import (
 
 pid = os.getpid()
 _CURRENT_PERIOD = None
+_marker = object()
 
 def _generate_session_id():
     """Returns opaque 40-character session id
@@ -408,27 +409,26 @@ class RedisDict(object):
         self._serialize_val(k, value)
 
     @refresh
-    def pop(self, k, default=None):
+    def pop(self, k, default=_marker):
         """Buffer commands to retrieve value by key and delete it. If
-        the attempt to get the key and the supplied ``default`` are both
-        ``None``, it will raise a ``KeyError``."""
+        the attempt to get the key returns ``None``, and no default is 
+        passed, it will raise a ``KeyError``."""
         with self.redis.pipeline() as pipe:
             while 1:
                 try:
                     pipe.watch(self.dict_hash_key)
-                    value = pipe.hget(self.dict_hash_key, k) or default
+                    value = pipe.hget(self.dict_hash_key, k)
                     pipe.multi()
                     pipe.hdel(self.dict_hash_key, k)
                     pipe.execute()
                     break
                 except WatchError: # pragma no cover (relies on redis-py tests)
                     continue
-        if value is not None and value == default:
-            return value
-        elif value is not None:
-            return self.decode(value) # explicit ``decode`` required here
-        else:
-            raise KeyError(k)
+        if value is None:
+            if default is _marker:
+                raise KeyError(k)
+            return default
+        return self.decode(value) # explicit ``decode`` required here
 
     @refresh
     def update(self, d):
