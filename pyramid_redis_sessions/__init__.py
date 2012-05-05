@@ -362,7 +362,7 @@ class RedisDict(object):
     def setdefault(self, k, default=None):
         """Add ``default`` to the hash for key ``k``."""
         self._serialize_val(k, default, f=self.redis.hsetnx)
-        return default
+        return self.get(k, default)
 
     @refresh
     def __getitem__(self, k):

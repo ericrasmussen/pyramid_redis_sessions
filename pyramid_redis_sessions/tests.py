@@ -199,13 +199,21 @@ class TestRedisDict(unittest.TestCase):
         from_client_after = self.value_from_client('mykey')
         self.assertEquals(from_client_after, None)
 
-    def test_setdefault(self):
+    def test_setdefault_doesntexist(self):
         key = 'default'
         default = 5
         callback = lambda : self.rdict[key]
         self.assertRaises(KeyError, callback)
         self.rdict.setdefault(key, default)
         self.assertEquals(self.rdict[key], default)
+
+    def test_setdefault_exists(self):
+        adict = {'abc':1}
+        key = 'default'
+        self.rdict[key] = adict
+        default = 5
+        result = self.rdict.setdefault(key, default)
+        self.assertEquals(result, adict)
 
     def test_contains(self):
         key = 'test'
