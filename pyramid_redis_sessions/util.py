@@ -75,6 +75,7 @@ def _parse_settings(settings):
 
     return options
 
+
 def session_factory_from_settings(settings): # pragma no cover
     """ Return a Pyramid session factory using Redis session settings from
     a Paste config file.
@@ -82,16 +83,17 @@ def session_factory_from_settings(settings): # pragma no cover
     options = _parse_settings(settings)
     return RedisSessionFactory(**options)
 
+
 def refresh(wrapped):
-    """Decorator to refresh the timeout on all keys for a given session.
-    Expects underlying session to have the attributes:
-      ``redis``  : Redis connection object
-      ``key``    : a unique Redis key for this session
-      ``timeout``: time in seconds to keep the Redis key alive
+    """Decorator to refresh the timeout on all keys for a given session and
+    persist the working copy of the session's ``dict``.
     """
-    def reset_timeout(session, *arg, **kw):
+    def reset_and_persist(session, *arg, **kw):
         result = wrapped(session, *arg, **kw)
-        session.redis.expire(session.session_id, session.timeout)
+        with session.redis.pipeline() as pipe:
+            pipe.set(session.session_id, session.to_redis())
+            pipe.expire(session.session_id, session.timeout)
+            pipe.execute()
         return result
 
-    return reset_timeout
+    return reset_and_persist

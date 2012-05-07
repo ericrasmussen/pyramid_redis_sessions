@@ -2,7 +2,6 @@ import unittest
 
 from . import (
     DummyRedis,
-    DummyPipeline,
     DummySession,
     )
 
@@ -41,16 +40,12 @@ class Test__insert_session_id_if_unique(unittest.TestCase):
 
     def test_id_not_unique(self):
         redis = DummyRedis()
-        pipeline = DummyPipeline()
-        pipeline.set('id', '')
-        redis.set_dummy_pipeline(pipeline)
+        redis.set('id', '')
         result = self._makeOne(redis)
         self.assertEqual(result, None)
 
     def test_watcherror_returns_none(self):
-        redis = DummyRedis()
-        pipeline = DummyPipeline(raise_watch_error=True)
-        redis.set_dummy_pipeline(pipeline)
+        redis = DummyRedis(raise_watcherror=True)
         result = self._makeOne(redis)
         self.assertEqual(result, None)
 
@@ -76,9 +71,7 @@ class Test_get_unique_session_id(unittest.TestCase):
 
     def test_id_not_unique(self):
         redis = DummyRedis()
-        pipeline = DummyPipeline()
-        pipeline.set(1, '')
-        redis.set_dummy_pipeline(pipeline)
+        redis.set(1, '')
         result = self._makeOne(redis)
         self.assertEqual(result, 2)
 
@@ -101,7 +94,9 @@ class Test_refresh_decorator(unittest.TestCase):
 
     def _makeSession(self, timeout):
         redis = DummyRedis()
-        session = DummySession('session.session_id', redis, timeout)
+        session_id = 'session.session_id'
+        redis.timeouts[session_id] = timeout
+        session = DummySession(session_id, redis, timeout)
         return session
 
     def test_it(self):

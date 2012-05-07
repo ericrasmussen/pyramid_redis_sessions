@@ -1,14 +1,30 @@
+import cPickle
+
 class DummySession(object):
     def __init__(self, key, redis, timeout=300):
         self.session_id = key
         self.redis = redis
         self.timeout = timeout
+        self.working_dict = {}
+
+    def to_redis(self):
+        return cPickle.dumps(self.working_dict)
 
 
 class DummyRedis(object):
-    def __init__(self, **kwarg):
+    def __init__(self, raise_watcherror=False, **kwarg):
         self.timeouts = {}
-        self.pipeline = lambda *arg, **kwarg : DummyPipeline()
+        self.store = {}
+        self.pipeline = lambda : DummyPipeline(self.store, raise_watcherror)
+
+    def __getattr__(self, key):
+        return lambda k : self.store.get(k)
+
+    def get(self, key):
+        return self.store
+
+    def set(self, key, value):
+        self.store[key] = self.value
 
     def expire(self, key, timeout):
         self.timeouts[key] = timeout
@@ -16,14 +32,11 @@ class DummyRedis(object):
     def ttl(self, key):
         return self.timeouts.get(key)
 
-    def set_dummy_pipeline(self, pipeline):
-        self.pipeline = lambda *arg, **kwarg : pipeline
-
 
 class DummyPipeline(object):
-    def __init__(self, raise_watch_error=False):
-        self.redisdict = {}
-        self.raise_watch_error = raise_watch_error
+    def __init__(self, store, raise_watcherror=False):
+        self.store = store
+        self.raise_watcherror = raise_watcherror
 
     def __enter__(self):
         return self
@@ -35,16 +48,16 @@ class DummyPipeline(object):
         pass
 
     def set(self, key, value):
-        self.redisdict[key] = value
+        self.store[key] = value
 
     def get(self, key):
-        return self.redisdict.get(key)
+        return self.store.get(key)
 
     def expire(self, key, timeout):
         pass
 
     def watch(self, key):
-        if self.raise_watch_error:
+        if self.raise_watcherror:
             from redis.exceptions import WatchError
             raise WatchError
 
