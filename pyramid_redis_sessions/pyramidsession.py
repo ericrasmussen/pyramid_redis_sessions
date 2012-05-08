@@ -5,10 +5,7 @@ import binascii
 from pyramid.compat import text_
 from zope.interface import implementer
 
-from .util import (
-    refresh,
-    persist,
-    )
+from .util import persist
 
 from .redisdict import RedisDict
 
@@ -23,7 +20,6 @@ class PyramidRedis(RedisDict):
     """
     def __init__(self, redis, session_id, timeout, add_cookie, delete_cookie,
                  encode=cPickle.dumps, decode=cPickle.loads):
-        # essentials
         self.session_id = session_id
         self.redis = redis
         self.timeout = timeout
@@ -45,7 +41,7 @@ class PyramidRedis(RedisDict):
 
     @persist
     def changed(self):
-        """ Persists the working dict using the ``@persist`` decorator."""
+        """ Persists the working dict immediately with ``@persist``."""
         pass
 
     def new_csrf_token(self):
