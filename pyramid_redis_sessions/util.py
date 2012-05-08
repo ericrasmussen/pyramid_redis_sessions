@@ -84,12 +84,21 @@ def session_factory_from_settings(settings): # pragma no cover
     return RedisSessionFactory(**options)
 
 
-# TODO: add a persist=True keyword arg so refreshing doesn't require persisting
 def refresh(wrapped):
     """Decorator to refresh the timeout on all keys for a given session and
     persist the working copy of the session's ``dict``.
     """
-    def reset_and_persist(session, *arg, **kw):
+    def wrapped_refresh(session, *arg, **kw):
+        result = wrapped(session, *arg, **kw)
+        session.redis.expire(session.session_id, session.timeout)
+        return result
+
+    return wrapped_refresh
+
+def persist(wrapped):
+    """ Decorator to persist the working session copy in Redis and reset the
+    expire time."""
+    def wrapped_persist(session, *arg, **kw):
         result = wrapped(session, *arg, **kw)
         with session.redis.pipeline() as pipe:
             pipe.set(session.session_id, session.to_redis())
@@ -97,4 +106,4 @@ def refresh(wrapped):
             pipe.execute()
         return result
 
-    return reset_and_persist
+    return wrapped_persist

@@ -2,9 +2,11 @@ import cPickle
 from zope.interface import implementer
 from pyramid.interfaces import IDict
 
-from .util import refresh
+from .util import (
+    refresh,
+    persist,
+    )
 
-_marker = object()
 
 @implementer(IDict)
 class RedisDict(object):
@@ -15,8 +17,12 @@ class RedisDict(object):
                  encode=cPickle.dumps, decode=cPickle.loads):
         """Initializes a per-session ``dict``-like object backed by Redis.
 
-        All keys are stored in a unique Redis hash (the key is the session_id +
-        ':dict') and exposed with a dictionary interface.
+        Methods that modify the ``dict`` (get, set, update, etc.) are decorated
+        with ``@persist`` to update the persisted copy in Redis and reset the
+        timeout.
+
+        Methods that are read-only (items, keys, values, etc.) are decorated
+        with ``@refresh`` to reset the session's expire time in Redis.
 
         Parameters:
 
@@ -58,15 +64,36 @@ class RedisDict(object):
         decoded = self.decode(persisted)
         return decoded
 
-    @refresh
+    # dict modifying methods decorated with @persist
+    @persist
     def __delitem__(self, key):
-        """Remove ``key`` from the session."""
         del self.managed_dict[key]
 
-    @refresh
+    @persist
     def __setitem__(self, key, value):
         self.managed_dict[key] = value
 
+    @persist
+    def setdefault(self, key, default=None):
+        return self.managed_dict.setdefault(key, default)
+
+    @persist
+    def clear(self):
+        return self.managed_dict.clear()
+
+    @persist
+    def pop(self, key, default=None):
+        return self.managed_dict.pop(key, default)
+
+    @persist
+    def update(self, other):
+        return self.managed_dict.update(other)
+
+    @persist
+    def popitem(self):
+        return self.managed_dict.popitem()
+
+    # dict read-only methods decorated with @refresh
     @refresh
     def __getitem__(self, key):
         return self.managed_dict[key]
@@ -76,48 +103,37 @@ class RedisDict(object):
         return key in self.managed_dict
 
     @refresh
-    def setdefault(self, key, default=None):
-        return self.managed_dict.setdefault(key, default)
-
     def keys(self):
         return self.managed_dict.keys()
 
+    @refresh
     def items(self):
         return self.managed_dict.items()
 
     @refresh
-    def clear(self):
-        return self.managed_dict.clear()
-
     def get(self, key, default=None):
         return self.managed_dict.get(key, default)
 
     @refresh
-    def pop(self, key, default=None):
-        return self.managed_dict.pop(key, default)
-
-    @refresh
-    def update(self, other):
-        return self.managed_dict.update(other)
-
     def __iter__(self):
         return self.managed_dict.__iter__()
 
+    @refresh
     def has_key(self, key):
         return self.managed_dict.has_key(key)
 
+    @refresh
     def values(self):
         return self.managed_dict.values()
 
+    @refresh
     def itervalues(self):
         return self.managed_dict.itervalues()
 
+    @refresh
     def iteritems(self):
         return self.managed_dict.iteritems()
 
+    @refresh
     def iterkeys(self):
         return self.managed_dict.iterkeys()
-
-    @refresh
-    def popitem(self):
-        return self.managed_dict.popitem()

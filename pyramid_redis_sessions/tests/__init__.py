@@ -27,8 +27,8 @@ class DummyRedis(object):
     def set(self, key, value):
         self.store[key] = self.value
 
-#    def expire(self, key, timeout):
-#        self.timeouts[key] = timeout
+    def expire(self, key, timeout):
+        self.timeouts[key] = timeout
 
     def ttl(self, key):
         return self.timeouts.get(key)

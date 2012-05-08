@@ -5,8 +5,6 @@ from . import (
     DummySession,
     )
 
-import cheese
-
 class Test_parse_settings(unittest.TestCase):
     def _makeOne(self, settings):
         from ..util import _parse_settings
@@ -87,6 +85,30 @@ class Test__generate_session_id(unittest.TestCase):
         inst = self._makeOne()
         result = inst()
         self.assertEqual(len(result), 40)
+
+
+class Test_persist_decorator(unittest.TestCase):
+    def _makeOne(self, wrapped):
+        from ..util import persist
+        return persist(wrapped)
+
+    def _makeSession(self, timeout):
+        redis = DummyRedis()
+        session_id = 'session.session_id'
+        redis.timeouts[session_id] = timeout
+        session = DummySession(session_id, redis, timeout)
+        return session
+
+    def test_it(self):
+        def wrapped(session, *arg, **kwarg):
+            return 'expected result'
+        inst = self._makeOne(wrapped)
+        timeout = 300
+        session = self._makeSession(timeout)
+        result = inst(session)
+        ttl = session.redis.ttl(session.session_id)
+        self.assertEqual(result, 'expected result')
+        self.assertEqual(timeout, ttl)
 
 
 class Test_refresh_decorator(unittest.TestCase):
