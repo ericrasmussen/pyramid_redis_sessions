@@ -12,22 +12,23 @@ class DummySession(object):
 
 
 class DummyRedis(object):
-    def __init__(self, raise_watcherror=False, **kwarg):
+    def __init__(self, raise_watcherror=False, session_id='session.id', **kw):
         self.timeouts = {}
         self.store = {}
+        self.session_id = session_id
         self.pipeline = lambda : DummyPipeline(self.store, raise_watcherror)
 
     def __getattr__(self, key):
         return lambda k : self.store.get(k)
 
     def get(self, key):
-        return self.store.get('session.id', {}) # XXX hack
+        return self.store.get(self.session_id, {})
 
     def set(self, key, value):
         self.store[key] = self.value
 
-    def expire(self, key, timeout):
-        self.timeouts[key] = timeout
+#    def expire(self, key, timeout):
+#        self.timeouts[key] = timeout
 
     def ttl(self, key):
         return self.timeouts.get(key)

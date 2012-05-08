@@ -5,6 +5,8 @@ from . import (
     DummySession,
     )
 
+import cheese
+
 class Test_parse_settings(unittest.TestCase):
     def _makeOne(self, settings):
         from ..util import _parse_settings
