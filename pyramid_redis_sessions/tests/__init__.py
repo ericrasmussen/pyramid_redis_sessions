@@ -21,7 +21,7 @@ class DummyRedis(object):
         return lambda k : self.store.get(k)
 
     def get(self, key):
-        return self.store
+        return self.store.get('session.id', {}) # XXX hack
 
     def set(self, key, value):
         self.store[key] = self.value

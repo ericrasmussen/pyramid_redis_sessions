@@ -84,6 +84,7 @@ def session_factory_from_settings(settings): # pragma no cover
     return RedisSessionFactory(**options)
 
 
+# TODO: add a persist=True keyword arg so refreshing doesn't require persisting
 def refresh(wrapped):
     """Decorator to refresh the timeout on all keys for a given session and
     persist the working copy of the session's ``dict``.
