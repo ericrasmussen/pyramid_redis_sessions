@@ -8,11 +8,13 @@ from . import (
     )
 
 class TestRedisDict(unittest.TestCase):
-    def _makeOne(self, session_id='session.id', timeout=300):
+    def _makeOne(self, session_id='session.id', timeout=300,
+                 encode=cPickle.dumps, decode=cPickle.loads):
         from ..redisdict import RedisDict
         redis = DummyRedis()
+        redis.set(session_id, encode({}))
         return RedisDict(redis, session_id, timeout,
-                         encode=lambda x: x, decode=lambda x: x)
+                         encode=encode, decode=decode)
 
     def test_delitem(self):
         inst = self._makeOne()
