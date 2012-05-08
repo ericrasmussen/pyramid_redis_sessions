@@ -6,11 +6,6 @@ from functools import partial
 from pyramid.compat import text_
 from zope.interface import implementer
 
-from redis.exceptions import (
-    ConnectionError,
-    WatchError,
-)
-
 from .util import (
     session_factory_from_settings,
     get_unique_session_id,
@@ -18,6 +13,7 @@ from .util import (
     )
 
 from .redisdict import RedisDict
+from .pyramidsession import PyramidRedis
 
 from pyramid.interfaces import ISession
 
