@@ -34,8 +34,8 @@ def _insert_session_id_if_unique(redis, timeout, session_id,
             if value is not None:
                 return None
             pipe.multi()
-            encoded_time = encoder(time.time())
-            pipe.set(session_id, encoded_time)
+            empty_session = encoder({})
+            pipe.set(session_id, empty_session)
             pipe.expire(session_id, timeout)
             pipe.execute()
             return session_id
@@ -85,8 +85,7 @@ def session_factory_from_settings(settings): # pragma no cover
 
 
 def refresh(wrapped):
-    """Decorator to refresh the timeout on all keys for a given session and
-    persist the working copy of the session's ``dict``.
+    """Decorator to reset the expire time for this session's key in Redis.
     """
     def wrapped_refresh(session, *arg, **kw):
         result = wrapped(session, *arg, **kw)
@@ -97,7 +96,8 @@ def refresh(wrapped):
 
 def persist(wrapped):
     """ Decorator to persist the working session copy in Redis and reset the
-    expire time."""
+    expire time.
+    """
     def wrapped_persist(session, *arg, **kw):
         result = wrapped(session, *arg, **kw)
         with session.redis.pipeline() as pipe:

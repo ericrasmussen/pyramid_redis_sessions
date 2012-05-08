@@ -7,21 +7,6 @@ from . import (
     DummyPipeline,
     )
 
-# set environment variable "REDIS_LIVE_TESTS" to use a real Redis server
-#if os.environ.get('REDIS_LIVE_TESTS', False): # pragma no cover
-#    from redis import Redis
-#    db = os.environ.get('REDIS_TEST_DB', '9')
-#    test_redis = Redis(db=db)
-#    test_redis.set('session.id', cPickle.dumps({}))
-#    test_redis.expire('session.id', 300)
-#    default_encoder = cPickle.dumps
-#    default_decoder = cPickle.loads
-#else: # pragma no cover
-#    test_redis = DummyRedis()
-#    default_encoder = lambda x : x
-#    default_decoder = lambda x : x
-
-
 class TestRedisDict(unittest.TestCase):
     def _makeOne(self, session_id='session.id', timeout=300):
         from ..redisdict import RedisDict
@@ -68,9 +53,6 @@ class TestRedisDict(unittest.TestCase):
         tmp = inst['a']
         tmp['3'] = 3
         self.assertEqual(inst['a'], {'1':1, '2':2, '3':3})
-
-
-    # TODO: redo non-updating tests to ignore from_redis
 
     def test_keys(self):
         inst = self._makeOne()
