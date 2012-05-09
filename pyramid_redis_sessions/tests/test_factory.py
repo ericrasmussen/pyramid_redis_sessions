@@ -91,3 +91,11 @@ class TestCookieHandling(unittest.TestCase):
         redis.store = {} # clears keys in DummyRedis
         session = self._makeOne(request)
         self.assertNotEqual(session.session_id, session_id)
+
+    def test_instance_conforms(self):
+        from zope.interface.verify import verifyObject
+        from pyramid.interfaces import ISession
+        request = self._make_request()
+        inst = self._makeOne(request)
+        verifyObject(ISession, inst)
+
