@@ -120,7 +120,7 @@ def RedisSessionFactory(
     def factory(request, new_session_id=get_unique_session_id):
         # note: will raise ConnectionError if connection is not established
         redis = getattr(request.registry, '_redis_sessions', None)
-        if redis is None:
+        if redis is None: # pragma no cover
             redis = Redis(host=host, port=port, db=db, password=password,
                           socket_timeout=socket_timeout,
                           connection_pool=connection_pool, charset=charset,
@@ -137,46 +137,48 @@ def RedisSessionFactory(
             except ValueError:
                 pass
 
-        def add_cookie(session_id, max_age=cookie_max_age):
+        def add_cookie(session_key):
             if not cookie_on_exception:
                 exc = getattr(request, 'exception', None)
                 if exc is None: # don't set cookie during exceptions
                     return
             def set_cookie_callback(request, response):
-                cookieval = signed_serialize(session_id, secret)
+                cookieval = signed_serialize(session_key, secret)
                 response.set_cookie(
                     cookie_name,
                     value = cookieval,
-                    max_age = max_age,
+                    max_age = cookie_max_age,
                     domain = cookie_domain,
                     secure = cookie_secure,
                     httponly = cookie_httponly,
                     )
             request.add_response_callback(set_cookie_callback)
+            return
 
         def delete_cookie():
             def set_cookie_callback(request, response):
                 response.delete_cookie(cookie_name)
             request.add_response_callback(set_cookie_callback)
+            return
 
         if session_id is None:
             session_id = new_session_id(redis, timeout)
             add_cookie(session_id)
 
-        # attempt to find the session by ``session_id``
+        # attempt to find the session by session_id
         session_check = redis.get(session_id)
 
-        # case: found session associated with ``session_id``
+        # case: found session associated with session_id
         if session_check is not None:
             session = PyramidRedis(redis, session_id, timeout, delete_cookie)
 
         # case: session id obtained from cookie is not in Redis; begin anew
         else:
-            unique_id = _insert_session_id_if_unique(redis, session_id, timeout)
-            add_cookie(unique_id)
-            session = PyramidRedis(redis, session_id, timeout, delete_cookie)
+            new_id = new_session_id(redis, timeout)
+            add_cookie(new_id)
+            session = PyramidRedis(redis, new_id, timeout, delete_cookie)
             session._v_new = True
         return session
-    return factory
 
+    return factory
 
