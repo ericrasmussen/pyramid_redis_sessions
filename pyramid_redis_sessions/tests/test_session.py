@@ -5,14 +5,13 @@ from . import DummyRedis
 
 class TestPyramidRedis(unittest.TestCase):
     def _makeOne(self, redis=None, session_id='session.id', timeout=300,
-                 add_cookie=lambda sess: None, delete_cookie=lambda : None,
+                 delete_cookie=lambda : None,
                  encode=cPickle.dumps, decode=cPickle.loads):
         from ..pyramidsession import PyramidRedis
         if redis is None:
             redis = DummyRedis()
         redis.set(session_id, encode({}))
-        return PyramidRedis(redis, session_id, timeout,
-                            add_cookie, delete_cookie,
+        return PyramidRedis(redis, session_id, timeout, delete_cookie,
                             encode, decode)
 
     def test_created(self):

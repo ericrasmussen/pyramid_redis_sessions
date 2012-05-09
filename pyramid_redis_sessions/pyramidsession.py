@@ -18,14 +18,13 @@ class PyramidRedis(RedisDict):
     Inherits from ``RedisDict`` to implement the required ``IDict``
     interface.
     """
-    def __init__(self, redis, session_id, timeout, add_cookie, delete_cookie,
+    def __init__(self, redis, session_id, timeout, delete_cookie,
                  encode=cPickle.dumps, decode=cPickle.loads):
         self.session_id = session_id
         self.redis = redis
         self.timeout = timeout
         self.encode = encode
         self.decode = decode
-        self.add_cookie = add_cookie
         self.delete_cookie = delete_cookie
         self.created = time.time()
         self.managed_dict = self.from_redis() # required for ``RedisDict``

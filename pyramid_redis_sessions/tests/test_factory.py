@@ -10,24 +10,23 @@ class TestCookieHandling(unittest.TestCase):
         request.registry._redis_sessions = dummy_redis
         return RedisSessionFactory(secret, **kw)(request)
 
+    def _serialize(self, session_id='session_id', secret='secret'):
+        from pyramid.session import signed_serialize
+        return signed_serialize(session_id, secret)
+
     def test_ctor_no_cookie(self):
         request = testing.DummyRequest()
         session = self._makeOne(request)
         self.assertEqual(session.from_redis(), {})
 
-
 """
-   def _serialize(self, session_id='session_test', secret='secret'):
-       from pyramid.session import signed_serialize
-       return signed_serialize(session_id, secret)
-
-   def test_ctor_with_cookie_still_valid(self):
-       import time
-       request = testing.DummyRequest()
-       cookieval = self._serialize()
-       request.cookies['session'] = cookieval
-       session = self._makeOne(request)
-       self.assertEqual(session.session_id, 'session_test')
+    def test_ctor_with_cookie_still_valid(self):
+        import time
+        request = testing.DummyRequest()
+        cookieval = self._serialize()
+        request.cookies['session'] = cookieval
+        session = self._makeOne(request)
+        self.assertEqual(session.session_id, 'session_test')
 
    def test_ctor_with_bad_cookie(self):
        request = testing.DummyRequest()

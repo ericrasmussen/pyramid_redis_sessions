@@ -117,8 +117,6 @@ def RedisSessionFactory(
       ``unix_socket_path``
     """
 
-    port = int(port)
-
     def factory(request, new_session_id=get_unique_session_id):
         # note: will raise ConnectionError if connection is not established
         redis = getattr(request.registry, '_redis_sessions', None)
@@ -170,15 +168,13 @@ def RedisSessionFactory(
 
         # case: found session associated with ``session_id``
         if session_check is not None:
-            session = PyramidRedis(redis, session_id, timeout,
-                                   add_cookie, delete_cookie)
+            session = PyramidRedis(redis, session_id, timeout, delete_cookie)
 
         # case: session id obtained from cookie is not in Redis; begin anew
         else:
             unique_id = _insert_session_id_if_unique(redis, session_id, timeout)
             add_cookie(unique_id)
-            session = PyramidRedis(redis, session_id, timeout,
-                                   add_cookie, delete_cookie)
+            session = PyramidRedis(redis, session_id, timeout, delete_cookie)
             session._v_new = True
         return session
     return factory
