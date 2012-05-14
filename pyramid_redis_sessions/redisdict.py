@@ -58,7 +58,6 @@ class RedisDict(object):
         """ Encode this session's ``managed_dict`` for storage in Redis."""
         return self.encode(self.managed_dict)
 
-    # TODO: verify that session_id is always present here or handle case: None
     def from_redis(self):
         """ Get this session's pickled/encoded ``dict`` from Redis."""
         persisted = self.redis.get(self.session_id)
