@@ -1,4 +1,4 @@
-This is the first draft for Redis-backed sessions in the Pyramid Web Application Development Framework.
+This is the second draft for Redis-backed sessions in the Pyramid Web Application Development Framework.
 
 This is not yet ready for production use, but you are welcome to test/profile/submit patches.
 
@@ -7,7 +7,6 @@ The package implements the Pyramid ISession interface (http://docs.pylonsproject
 Warnings before use:
 
   * This is an early alpha and not yet intended for production use
-  * **RUNNING TESTS WILL FLUSH THE CONTENTS OF YOUR REDIS SERVER'S DB 9** (same as redis-py tests)
 
 Usage (this will improve after release on pypi):
 
@@ -44,9 +43,3 @@ In your Pyramid app's INI file you can configure the following settings:
 
 Only redis.sessions.secret is required. All other parameters have sensible defaults.
 
-Upcoming:
-
-  * Performance tuning
-  * Optional encryption of server-side data
-  * Revamped test suite
-  * Revamped cookie handling
