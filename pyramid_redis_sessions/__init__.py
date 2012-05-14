@@ -7,7 +7,6 @@ from pyramid.compat import text_
 from zope.interface import implementer
 
 from .util import (
-    session_factory_from_settings,
     get_unique_session_id,
     refresh,
     )
@@ -27,6 +26,13 @@ def includeme(config): # pragma no cover
     session_factory = session_factory_from_settings(config.registry.settings)
     config.set_session_factory(session_factory)
 
+def session_factory_from_settings(settings): # pragma no cover
+    """ Return a Pyramid session factory using Redis session settings from
+    a Paste config file.
+    """
+    from .util import _parse_settings
+    options = _parse_settings(settings)
+    return RedisSessionFactory(**options)
 
 def RedisSessionFactory(
     secret,

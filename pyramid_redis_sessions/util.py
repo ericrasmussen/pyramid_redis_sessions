@@ -75,15 +75,6 @@ def _parse_settings(settings):
 
     return options
 
-
-def session_factory_from_settings(settings): # pragma no cover
-    """ Return a Pyramid session factory using Redis session settings from
-    a Paste config file.
-    """
-    options = _parse_settings(settings)
-    return RedisSessionFactory(**options)
-
-
 def refresh(wrapped):
     """Decorator to reset the expire time for this session's key in Redis.
     """
