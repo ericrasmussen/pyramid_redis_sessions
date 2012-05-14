@@ -52,11 +52,11 @@ def get_unique_session_id(redis, timeout, generator=_generate_session_id):
 
 
 def _parse_settings(settings):
-    """ Convenience function to collect settings prefixed by 'redis.session'.
+    """ Convenience function to collect settings prefixed by 'redis.sessions'.
     Coerces 'true' and 'false' (case insensitive) to bools.
     """
     keys = filter(
-        lambda s: s.startswith('redis.session.'),
+        lambda s: s.startswith('redis.sessions.'),
         settings
         )
     options = {}
