@@ -12,9 +12,9 @@ class Test_parse_settings(unittest.TestCase):
 
     def _makeSettings(self):
         settings = {
-            'redis.session.cookie_secure' : 'false',
-            'redis.session.host'          : 'localhost',
-            'redis.session.port'          : '1234',
+            'redis.sessions.cookie_secure' : 'false',
+            'redis.sessions.host'          : 'localhost',
+            'redis.sessions.port'          : '1234',
             'ignore.this.setting'         : '',
             }
         return settings
