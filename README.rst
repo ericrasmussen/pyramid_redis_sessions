@@ -14,10 +14,13 @@ Usage (this will improve after release on pypi):
   * In your Pyramid config file (typically development.ini or production.ini), configure the settings (see below)
   * In your Pyramid application main function, use either:
 
-      1) pyramid.include('pyramid_redis_sessions')
-      2) from pyramid_redis_sessions import session_factory_from_settings
-      3) session_factory = session_factory_from_settings(settings)
-      4) config.set_session_factory(session_factory)
+      * pyramid.include('pyramid_redis_sessions')
+
+  * Or:
+
+      * from pyramid_redis_sessions import session_factory_from_settings
+      * session_factory = session_factory_from_settings(settings)
+      * config.set_session_factory(session_factory)
 
 In your Pyramid app's INI file you can configure the following settings:
 
