@@ -16,8 +16,8 @@ Usage (this will improve after release on pypi):
 
       1) pyramid.include('pyramid_redis_sessions')
       2) from pyramid_redis_sessions import session_factory_from_settings
-         session_factory = session_Factory_from_settings(settings)
-         config.set_session_factory(session_factory)
+      3) session_factory = session_factory_from_settings(settings)
+      4) config.set_session_factory(session_factory)
 
 In your Pyramid app's INI file you can configure the following settings:
 
