@@ -5,7 +5,10 @@ import binascii
 from pyramid.compat import text_
 from zope.interface import implementer
 
-from .util import persist
+from .util import (
+    persist,
+    refresh,
+    )
 
 from .redisdict import RedisDict
 
@@ -43,11 +46,13 @@ class PyramidRedis(RedisDict):
         """ Persists the working dict immediately with ``@persist``."""
         pass
 
+    @persist
     def new_csrf_token(self):
         token = text_(binascii.hexlify(os.urandom(20)))
         self['_csrft_'] = token
         return token
 
+    @refresh
     def get_csrf_token(self):
         token = self.get('_csrft_', None)
         if token is None:
@@ -56,15 +61,18 @@ class PyramidRedis(RedisDict):
             token = unicode(token)
         return token
 
+    @persist
     def flash(self, msg, queue='', allow_duplicate=True):
         storage = self.setdefault('_f_' + queue, [])
         if allow_duplicate or (msg not in storage):
             storage.append(msg)
 
+    @refresh
     def peek_flash(self, queue=''):
         storage = self.get('_f_' + queue, [])
         return storage
 
+    @persist
     def pop_flash(self, queue=''):
         storage = self.pop('_f_' + queue, [])
         return storage
