@@ -42,3 +42,4 @@ You can configure the following settings in your ini file:
 
 Only redis.sessions.secret is required. All other parameters have sensible defaults.
 
+Note: package assumes you have a running Redis instance at the specified host and port.
