@@ -11,8 +11,7 @@ from .util import (
     refresh,
     )
 
-from .redisdict import RedisDict
-from .pyramidsession import PyramidRedis
+from .redissession import RedisSession
 
 from pyramid.interfaces import ISession
 
@@ -176,13 +175,13 @@ def RedisSessionFactory(
 
         # case: found session associated with session_id
         if session_check is not None:
-            session = PyramidRedis(redis, session_id, timeout, delete_cookie)
+            session = RedisSession(redis, session_id, timeout, delete_cookie)
 
         # case: session id obtained from cookie is not in Redis; begin anew
         else:
             new_id = new_session_id(redis, timeout)
             add_cookie(new_id)
-            session = PyramidRedis(redis, new_id, timeout, delete_cookie)
+            session = RedisSession(redis, new_id, timeout, delete_cookie)
             session._v_new = True
         return session
 
