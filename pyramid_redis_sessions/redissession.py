@@ -10,12 +10,8 @@ from .util import (
     refresh,
     )
 
-from pyramid.interfaces import (
-    ISession,
-    IDict,
-    )
+from pyramid.interfaces import ISession
 
-@implementer(IDict)
 @implementer(ISession)
 class RedisSession(object):
     """ Implements the Pyramid ISession and IDict interfaces and is returned by
