@@ -1,18 +1,14 @@
-This is the second draft for Redis-backed sessions in the Pyramid Web Application Development Framework.
+pyramid_redis_sessions gives you Redis-backed sessions for the Pyramid Web Application Development Framework.
 
-This is not yet ready for production use, but you are welcome to test/profile/submit patches.
+The package implements the Pyramid ISession interface (http://docs.pylonsproject.org/projects/pyramid/en/latest/api/interfaces.html#pyramid.interfaces.ISession), and that portion of the API will not change. However, any other implementation-specific methods on the ``RedisSession`` object are subject to change.
 
-The package implements the Pyramid ISession interface (http://docs.pylonsproject.org/projects/pyramid/en/1.3-branch/api/interfaces.html#pyramid.interfaces.ISession), and that portion of the API will not change. However, any other implementation-specific methods on the ``PyramidRedis`` session object are likely to undergo major changes.
+Patches and feature requests are welcome.
 
-Warnings before use:
+Usage:
 
-  * This is an early alpha and not yet intended for production use
-
-Usage (this will improve after release on pypi):
-
-  * Add this package to your Python path or distribute/install egg
+  * $ easy_install pyramid_redis_sessions
   * In your Pyramid config file (typically development.ini or production.ini), configure the settings (see below)
-  * In your Pyramid application main function, use either:
+  * In your Pyramid application ``main`` function, use either:
 
       * pyramid.include('pyramid_redis_sessions')
 
@@ -22,7 +18,7 @@ Usage (this will improve after release on pypi):
       * session_factory = session_factory_from_settings(settings)
       * config.set_session_factory(session_factory)
 
-In your Pyramid app's INI file you can configure the following settings:
+You can configure the following settings in your ini file:
 
  * redis.sessions.secret = your_secret
  * redis.sessions.timeout = 1200

@@ -1,4 +1,4 @@
-__version__ = '0.1a'
+__version__ = '0.9b'
 
 import os
 
@@ -24,7 +24,7 @@ setup(name='pyramid_redis_sessions',
       keywords='pyramid session cache redis',
       author='Eric Rasmussen',
       author_email='eric@chromaticleaves.com',
-      url='http://pyramid.chromaticleaves.com/docs/pyramid_redis_sessions/',
+      url='https://github.com/ericrasmussen/pyramid_redis_sessions',
       license='FreeBSD',
       packages=find_packages(),
       test_suite='pyramid_redis_sessions.tests',
