@@ -15,6 +15,7 @@ class Test_parse_settings(unittest.TestCase):
             'redis.sessions.cookie_secure' : 'false',
             'redis.sessions.host'          : 'localhost',
             'redis.sessions.port'          : '1234',
+            'redis.sessions.socket_timeout': '1234',
             'ignore.this.setting'         : '',
             }
         return settings
@@ -25,6 +26,7 @@ class Test_parse_settings(unittest.TestCase):
         self.assertEqual(False, inst['cookie_secure'])
         self.assertEqual('localhost', inst['host'])
         self.assertEqual(1234, inst['port'])
+        self.assertEqual(1234.0, inst['socket_timeout'])
         self.assertNotIn('ignore.this.setting', inst)
 
 

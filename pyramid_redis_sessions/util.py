@@ -73,6 +73,10 @@ def _parse_settings(settings):
         if i in options:
             options[i] = int(options[i])
 
+    # coerce float
+    if 'socket_timeout' in options:
+        options['socket_timeout'] = float(options['socket_timeout'])
+
     return options
 
 def refresh(wrapped):
