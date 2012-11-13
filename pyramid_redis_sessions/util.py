@@ -4,6 +4,7 @@ import random
 import cPickle
 from hashlib import sha1
 from redis.exceptions import WatchError
+from pyramid.exceptions import ConfigurationError
 
 pid = os.getpid()
 _CURRENT_PERIOD = None
@@ -76,6 +77,9 @@ def _parse_settings(settings):
     # coerce float
     if 'socket_timeout' in options:
         options['socket_timeout'] = float(options['socket_timeout'])
+
+    if 'secret' not in options:
+        raise ConfigurationError('redis.sessions.secret is a required setting')
 
     return options
 
