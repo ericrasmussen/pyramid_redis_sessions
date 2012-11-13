@@ -12,11 +12,12 @@ class Test_parse_settings(unittest.TestCase):
 
     def _makeSettings(self):
         settings = {
+            'redis.sessions.secret'        : 'mysecret',
             'redis.sessions.cookie_secure' : 'false',
             'redis.sessions.host'          : 'localhost',
             'redis.sessions.port'          : '1234',
             'redis.sessions.socket_timeout': '1234',
-            'ignore.this.setting'         : '',
+            'ignore.this.setting'          : '',
             }
         return settings
 
@@ -28,6 +29,16 @@ class Test_parse_settings(unittest.TestCase):
         self.assertEqual(1234, inst['port'])
         self.assertEqual(1234.0, inst['socket_timeout'])
         self.assertNotIn('ignore.this.setting', inst)
+
+    def test_minimal_configuration(self):
+        settings = { 'redis.sessions.secret': 'mysecret' }
+        inst = self._makeOne(settings)
+        self.assertEqual('mysecret', inst['secret'])
+
+    def test_no_secret_raises_error(self):
+        from pyramid.exceptions import ConfigurationError
+        settings = {}
+        self.assertRaises(ConfigurationError, self._makeOne, settings)
 
 
 class Test__insert_session_id_if_unique(unittest.TestCase):
