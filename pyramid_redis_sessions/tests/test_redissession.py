@@ -257,3 +257,7 @@ class TestRedisSession(unittest.TestCase):
         inst = self._makeOne()
         verifyObject(ISession, inst)
 
+    def test_reset_timeout_for_session(self):
+        inst = self._makeOne(timeout=100)
+        inst.reset_timeout_for_session(200)
+        self.assertEqual(inst.timeout, 200)
