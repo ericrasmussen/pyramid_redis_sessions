@@ -205,4 +205,4 @@ class RedisSession(object):
         of the session. Useful in situations where you want to change the
         expire time dynamically.
         """
-        self.setdefault('_rs_timeout', timeout)
+        self['_rs_timeout'] = timeout
