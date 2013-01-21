@@ -58,12 +58,16 @@ class RedisSession(object):
                  encode=cPickle.dumps, decode=cPickle.loads):
         self.session_id = session_id
         self.redis = redis
-        self.timeout = timeout
         self.encode = encode
         self.decode = decode
         self.delete_cookie = delete_cookie
         self.created = time.time()
         self.managed_dict = self.from_redis()
+        self.default_timeout = timeout
+
+    @property
+    def timeout(self):
+        return self.managed_dict.get('_rs_timeout', self.default_timeout)
 
     def to_redis(self):
         """ Encode this session's ``managed_dict`` for storage in Redis.
@@ -193,3 +197,12 @@ class RedisSession(object):
     def pop_flash(self, queue=''):
         storage = self.pop('_f_' + queue, [])
         return storage
+
+    # RedisSession extra methods
+    def reset_timeout_for_session(self, timeout):
+        """
+        Resets the timeout for this session to ``timeout`` for the duration
+        of the session. Useful in situations where you want to change the
+        expire time dynamically.
+        """
+        self['_rs_timeout'] = timeout

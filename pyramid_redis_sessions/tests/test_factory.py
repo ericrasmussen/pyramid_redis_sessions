@@ -4,7 +4,7 @@ from pyramid import testing
 
 from . import DummyRedis
 
-class TestCookieHandling(unittest.TestCase):
+class TestRedisSessionFactory(unittest.TestCase):
     def _makeOne(self, request, secret='secret', **kw):
         from .. import RedisSessionFactory
         return RedisSessionFactory(secret, **kw)(request)
@@ -99,3 +99,12 @@ class TestCookieHandling(unittest.TestCase):
         inst = self._makeOne(request)
         verifyObject(ISession, inst)
 
+    def test_changed_session_timeout_persists(self):
+        request = self._make_request()
+        inst = self._makeOne(request)
+        inst.reset_timeout_for_session(555)
+        session_id = inst.session_id
+        cookieval = self._serialize(session_id)
+        request.cookies['session'] = cookieval
+        new_session = self._makeOne(request)
+        self.assertEqual(new_session.timeout, 555)
