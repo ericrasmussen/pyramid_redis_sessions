@@ -8,7 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
-testing_extras = ['pkginfo', 'nose', 'coverage']
+testing_extras = ['pkginfo', 'nose', 'coverage', 'mock']
 
 setup(name='pyramid_redis_sessions',
       version=__version__,
@@ -30,7 +30,7 @@ setup(name='pyramid_redis_sessions',
       test_suite='pyramid_redis_sessions.tests',
       include_package_data=True,
       zip_safe=False,
-      tests_require=['pkginfo', 'nose'],
+      tests_require=['pkginfo', 'nose', 'mock'],
       install_requires=[
         'redis>=2.4.11',
         'pyramid>=1.3',

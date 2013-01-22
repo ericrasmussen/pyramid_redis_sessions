@@ -1,10 +1,14 @@
 import cPickle
 import unittest
+from mock import patch
 from pyramid import testing
 
 from . import DummyRedis
 
 class TestRedisSessionFactory(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
     def _makeOne(self, request, secret='secret', **kw):
         from .. import RedisSessionFactory
         return RedisSessionFactory(secret, **kw)(request)
@@ -108,3 +112,24 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.cookies['session'] = cookieval
         new_session = self._makeOne(request)
         self.assertEqual(new_session.timeout, 555)
+
+    @patch('pyramid_redis_sessions.Redis', new=DummyRedis)
+    def test_configuration_from_url(self):
+        # have to bypass _make_request(), so pyramid_redis_sessions is forced to create
+        # a new redis object
+        request = testing.DummyRequest()
+        inst = self._makeOne(request, url='redis://username:password@localhost:6379')
+        self.assertEqual(inst.redis.host, 'localhost')
+        self.assertEqual(inst.redis.port, 6379)
+        self.assertEqual(inst.redis.password, 'password')
+        self.assertEqual(inst.redis.db, 0)
+
+    @patch('pyramid_redis_sessions.Redis', new=DummyRedis)
+    def test_configuration_from_url_db_specified(self):
+        # same case as previous test
+        request = testing.DummyRequest()
+        inst = self._makeOne(request, url='redis://username:password@localhost:6379/1')
+        self.assertEqual(inst.redis.host, 'localhost')
+        self.assertEqual(inst.redis.port, 6379)
+        self.assertEqual(inst.redis.password, 'password')
+        self.assertEqual(inst.redis.db, 1)

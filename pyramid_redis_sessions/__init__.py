@@ -44,6 +44,7 @@ def RedisSessionFactory(
     cookie_secure=False,
     cookie_httponly=False,
     cookie_on_exception=True,
+    url=None,
     host='localhost',
     port=6379,
     db=0,
@@ -99,6 +100,10 @@ def RedisSessionFactory(
     If ``True``, set a session cookie even if an exception occurs
     while rendering a view. Default: ``True``.
 
+    ``url``
+    A url that represents the Redis server, and is of the format
+    redis://username:password@localhost:6379/0. Default: ``None``.
+
     ``host``
     A string representing the IP of your Redis server. Default: ``localhost``.
 
@@ -126,10 +131,13 @@ def RedisSessionFactory(
         # note: will raise ConnectionError if connection is not established
         redis = getattr(request.registry, '_redis_sessions', None)
         if redis is None: # pragma no cover
-            redis = Redis(host=host, port=port, db=db, password=password,
-                          socket_timeout=socket_timeout,
-                          connection_pool=connection_pool, charset=charset,
-                          errors=errors, unix_socket_path=unix_socket_path)
+            if not url is None:
+                redis = Redis.from_url(url)
+            else:
+                redis = Redis(host=host, port=port, db=db, password=password,
+                              socket_timeout=socket_timeout,
+                              connection_pool=connection_pool, charset=charset,
+                              errors=errors, unix_socket_path=unix_socket_path)
             setattr(request.registry, '_redis_sessions', redis)
 
         cookieval = request.cookies.get(cookie_name)
