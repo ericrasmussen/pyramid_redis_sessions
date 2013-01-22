@@ -1,4 +1,5 @@
 import cPickle
+from urlparse import urlparse
 
 class DummySession(object):
     def __init__(self, key, redis, timeout=300):
@@ -12,7 +13,12 @@ class DummySession(object):
 
 
 class DummyRedis(object):
-    def __init__(self, raise_watcherror=False, **kw):
+    def __init__(self, host=None, port=None, password=None, db=None, raise_watcherror=False, **kw):
+        self.host = host
+        self.port = port
+        self.password = password
+        self.db = db
+
         self.timeouts = {}
         self.store = {}
         self.pipeline = lambda : DummyPipeline(self.store, raise_watcherror)
@@ -28,6 +34,23 @@ class DummyRedis(object):
 
     def ttl(self, key):
         return self.timeouts.get(key)
+
+    @classmethod
+    def from_url(cls, url, db=None, **kwargs):
+        url = urlparse(url)
+
+        # We only support redis:// schemes.
+        assert url.scheme == 'redis' or not url.scheme
+
+        # Extract the database ID from the path component if hasn't been given.
+        if db is None:
+            try:
+                db = int(url.path.replace('/', ''))
+            except (AttributeError, ValueError):
+                db = 0
+
+        return cls(host=url.hostname, port=url.port, db=db,
+                   password=url.password, **kwargs)
 
 
 class DummyPipeline(object):
