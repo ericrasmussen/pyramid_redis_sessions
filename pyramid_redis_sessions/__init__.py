@@ -8,10 +8,7 @@ from zope.interface import implementer
 
 from .session import RedisSession
 
-from .connection import (
-    get_default_connection,
-    get_connection_from_url,
-    )
+from .connection import get_default_connection
 
 from .util import (
     get_unique_session_id,
@@ -28,12 +25,12 @@ from pyramid.session import (
 def includeme(config): # pragma no cover
     """
     Allows users to call ``config.include('pyramid_redis_sessions')``. If a
-    redis_loader setting is specified then we convert it into a python object
+    custom_connect setting is specified then we convert it into a python object
     by resolving the location of the dotted path relative to the current
     python path.
     """
     settings = config.registry.settings
-    # special rule for a redis_loader string (a dotted python path)
+    # special rule for a custom_connect function (a dotted python path)
     if 'custom_connect' in settings:
         custom_connect = config.maybe_dotted(settings['custom_connect'])
         settings['custom_connect'] = custom_connect
@@ -85,7 +82,7 @@ def RedisSessionFactory(
     Parameters:
 
     ``secret``
-    A string which is used to sign the cookie.
+    A string which iws used to sign the cookie.
 
     ``timeout``
     A number of seconds of inactivity before a session times out.
@@ -152,19 +149,14 @@ def RedisSessionFactory(
             errors=errors,
             unix_socket_path=unix_socket_path,
             )
-        # an explicit custom connection handler gets priority
+        # an explicit custom connection handler gets priority over the default
         if custom_connect is not None:
             redis = custom_connect(request, **redis_options)
-        # a url connection string gets next priority
-        elif url is not None:
-            redis = get_connection_from_url(request, url, **redis_options)
-        # otherwise use the default
         else:
-            redis = get_default_connection(request, **redis_options)
-
-        cookieval = request.cookies.get(cookie_name)
+            redis = get_default_connection(request, url=url, **redis_options)
 
         session_id = None
+        cookieval = request.cookies.get(cookie_name)
 
         if cookieval is not None:
             try:
