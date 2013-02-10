@@ -149,6 +149,7 @@ def RedisSessionFactory(
             errors=errors,
             unix_socket_path=unix_socket_path,
             )
+
         # an explicit custom connection handler gets priority over the default
         if custom_connect is not None:
             redis = custom_connect(request, **redis_options)
@@ -165,19 +166,25 @@ def RedisSessionFactory(
                 pass
 
         def add_cookie(session_key):
-            if not cookie_on_exception:
-                exc = getattr(request, 'exception', None)
-                if exc is None: # don't set cookie during exceptions
-                    return
             def set_cookie_callback(request, response):
+                """
+                The set cookie callback will first check to see if we're in an
+                exception. If we're in an exception and ``cookie_on_exception``
+                is False, we return immediately before setting the cookie.
+
+                For all other cases the cookie will be set normally.
+                """
+                exc = getattr(request, 'exception', None)
+                if exc is not None and cookie_on_exception == False:
+                    return
                 cookieval = signed_serialize(session_key, secret)
                 response.set_cookie(
                     cookie_name,
-                    value = cookieval,
-                    max_age = cookie_max_age,
-                    domain = cookie_domain,
-                    secure = cookie_secure,
-                    httponly = cookie_httponly,
+                    value=cookieval,
+                    max_age=cookie_max_age,
+                    domain=cookie_domain,
+                    secure=cookie_secure,
+                    httponly=cookie_httponly,
                     )
             request.add_response_callback(set_cookie_callback)
             return
