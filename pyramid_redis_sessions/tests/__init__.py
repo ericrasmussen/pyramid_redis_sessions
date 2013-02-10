@@ -13,6 +13,7 @@ class DummySession(object):
 
 class DummyRedis(object):
     def __init__(self, raise_watcherror=False, **kw):
+        self.url = None
         self.timeouts = {}
         self.store = {}
         self.pipeline = lambda : DummyPipeline(self.store, raise_watcherror)
@@ -21,7 +22,6 @@ class DummyRedis(object):
     @classmethod
     def from_url(cls, url):
         redis = DummyRedis()
-        import pdb; pdb.set_trace()
         redis.url = url
         return redis
 

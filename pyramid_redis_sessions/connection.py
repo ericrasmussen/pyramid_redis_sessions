@@ -76,7 +76,6 @@ def get_default_connection(request,
     if redis is not None:
         return redis
 
-    import pdb; pdb.set_trace()
     # otherwise create a new connection
     if url is not None:
         redis = redis_connect.from_url(url, **redis_options)

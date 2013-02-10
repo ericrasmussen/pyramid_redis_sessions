@@ -112,3 +112,10 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.cookies['session'] = cookieval
         new_session = self._makeOne(request)
         self.assertEqual(new_session.timeout, 555)
+
+    def test_custom_connect(self):
+        request = self._make_request()
+        redis = DummyRedis()
+        custom_connect = lambda req, **kw: redis
+        inst = self._makeOne(request, custom_connect=custom_connect)
+        self.assertEqual(inst.redis, redis)
