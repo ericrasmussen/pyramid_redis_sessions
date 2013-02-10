@@ -3,6 +3,7 @@ import time
 import random
 import cPickle
 from hashlib import sha1
+from pyramid.settings import asbool
 from redis.exceptions import WatchError
 from pyramid.exceptions import ConfigurationError
 
@@ -64,10 +65,12 @@ def _parse_settings(settings):
     for k in keys:
         param = k.split('.')[-1]
         value = settings[k]
-        # coerce bools (TODO: use asbool explicitly on known bool settings)
-        if hasattr(value, 'lower') and value.lower() in ['true', 'false']:
-            value = value.lower() == 'true'
         options[param] = value
+
+    # coerce bools
+    for b in ('cookie_secure', 'cookie_httponly', 'cookie_on_exception'):
+        if b in options:
+            options[b] = asbool(options[b])
 
     # coerce ints
     for i in ('port', 'db', 'cookie_max_age'):
