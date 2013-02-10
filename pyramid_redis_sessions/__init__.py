@@ -82,7 +82,7 @@ def RedisSessionFactory(
     Parameters:
 
     ``secret``
-    A string which iws used to sign the cookie.
+    A string which is used to sign the cookie.
 
     ``timeout``
     A number of seconds of inactivity before a session times out.
