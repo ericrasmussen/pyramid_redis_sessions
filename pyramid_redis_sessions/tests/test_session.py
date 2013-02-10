@@ -11,7 +11,7 @@ class TestRedisSession(unittest.TestCase):
     def _makeOne(self, session_id='session.id', timeout=300,
                  delete_cookie=lambda : None,
                  encode=cPickle.dumps, decode=cPickle.loads):
-        from ..redissession import RedisSession
+        from ..session import RedisSession
         redis = DummyRedis()
         redis.set(session_id, encode({}))
         return RedisSession(redis, session_id, timeout, delete_cookie,

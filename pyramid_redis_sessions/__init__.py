@@ -6,7 +6,9 @@ from functools import partial
 from pyramid.compat import text_
 from zope.interface import implementer
 
-from .connections import (
+from .session import RedisSession
+
+from .connection import (
     get_default_connection,
     get_connection_from_url,
     )
@@ -15,8 +17,6 @@ from .util import (
     get_unique_session_id,
     refresh,
     )
-
-from .redissession import RedisSession
 
 from pyramid.interfaces import ISession
 
