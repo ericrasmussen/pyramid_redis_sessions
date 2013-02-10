@@ -48,21 +48,25 @@ class TestRedisSessionFactory(unittest.TestCase):
         deserialized_cookie = signed_deserialize(cookieval, invalid_secret)
         self.assertNotEqual(deserialized_cookie, session.session_id)
 
-    def test_set_cookie_on_exception(self):
+    def test_cookie_on_exception_false_with_exception(self):
         import webob
         request = self._make_request()
         request.exception = True
         session = self._makeOne(request, cookie_on_exception=False)
+        callbacks = request.response_callbacks
         response = webob.Response()
+        processed_callback = callbacks[0](request, response)
         self.assertNotEqual(response.headerlist[-1][0], 'Set-Cookie')
 
-    def test_set_cookie_on_exception_no_request_exception(self):
+    def test_cookie_on_exception_false_no_exception(self):
         import webob
         request = self._make_request()
         request.exception = None
         session = self._makeOne(request, cookie_on_exception=False)
+        callbacks = request.response_callbacks
         response = webob.Response()
-        self.assertNotEqual(response.headerlist[-1][0], 'Set-Cookie')
+        processed_callback = callbacks[0](request, response)
+        self.assertEqual(response.headerlist[-1][0], 'Set-Cookie')
 
     def test_cookie_callback(self):
         import webob
