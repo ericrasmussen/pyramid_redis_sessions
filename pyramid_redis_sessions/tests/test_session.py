@@ -199,7 +199,7 @@ class TestRedisSession(unittest.TestCase):
 
     def test_new(self):
         inst = self._makeOne()
-        inst._v_new = True
+        inst._rs_new = True
         self.assertTrue(inst.new)
 
     def test_invalidate_dict(self):

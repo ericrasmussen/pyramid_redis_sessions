@@ -211,7 +211,7 @@ def RedisSessionFactory(
             new_id = new_session_id(redis, timeout)
             add_cookie(new_id)
             session = RedisSession(redis, new_id, timeout, delete_cookie)
-            session._v_new = True
+            session._rs_new = True
         return session
 
     return factory

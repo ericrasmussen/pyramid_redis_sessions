@@ -164,7 +164,7 @@ class RedisSession(object):
     # session methods persist or refresh using above dict methods
     @property
     def new(self):
-        return getattr(self, '_v_new', False)
+        return getattr(self, '_rs_new', False)
 
     def invalidate(self):
         """ Delete all keys unique to this session and expire cookie."""
