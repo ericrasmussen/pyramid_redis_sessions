@@ -30,10 +30,12 @@ def includeme(config): # pragma no cover
     python path.
     """
     settings = config.registry.settings
-    # special rule for a custom_connect function (a dotted python path)
-    if 'custom_connect' in settings:
-        custom_connect = config.maybe_dotted(settings['custom_connect'])
-        settings['custom_connect'] = custom_connect
+
+    # special rule for dotted python paths to configurable callables
+    for option in ('custom_connect', 'encode', 'decode'):
+        if option in settings:
+            settings[option] = config.maybe_dotted(settings[option])
+
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)
 
@@ -57,6 +59,8 @@ def RedisSessionFactory(
     cookie_secure=False,
     cookie_httponly=False,
     cookie_on_exception=True,
+    encode=cPickle.dumps,
+    decode=cPickle.loads,
     host='localhost',
     port=6379,
     db=0,
