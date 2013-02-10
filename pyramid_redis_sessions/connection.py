@@ -44,7 +44,10 @@ connect.
 
 from redis import StrictRedis
 
-def get_default_connection(request, url=None, **redis_options):
+def get_default_connection(request,
+                           url=None,
+                           redis_connect=StrictRedis,
+                           **redis_options):
     """
     Default redis connection handler. Once a connection is established it is
     saved in `request.registry`.
@@ -73,11 +76,12 @@ def get_default_connection(request, url=None, **redis_options):
     if redis is not None:
         return redis
 
+    import pdb; pdb.set_trace()
     # otherwise create a new connection
     if url is not None:
-        redis = StrictRedis.from_url(url, **redis_options)
+        redis = redis_connect.from_url(url, **redis_options)
     else:
-        redis = StrictRedis(**redis_options)
+        redis = redis_connect(**redis_options)
 
     # save the new connection in the registry
     setattr(request.registry, '_redis_sessions', redis)
