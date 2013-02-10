@@ -6,6 +6,11 @@ from functools import partial
 from pyramid.compat import text_
 from zope.interface import implementer
 
+from .connections import (
+    get_default_connection,
+    get_connection_from_url,
+    )
+
 from .util import (
     get_unique_session_id,
     refresh,
@@ -21,13 +26,24 @@ from pyramid.session import (
     )
 
 def includeme(config): # pragma no cover
-    """Allows users to call ``config.include('pyramid_redis_sessions')``."""
-    session_factory = session_factory_from_settings(config.registry.settings)
+    """
+    Allows users to call ``config.include('pyramid_redis_sessions')``. If a
+    redis_loader setting is specified then we convert it into a python object
+    by resolving the location of the dotted path relative to the current
+    python path.
+    """
+    settings = config.registry.settings
+    # special rule for a redis_loader string (a dotted python path)
+    if 'custom_connect' in settings:
+        custom_connect = config.maybe_dotted(settings['custom_connect'])
+        settings['custom_connect'] = custom_connect
+    session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)
 
 def session_factory_from_settings(settings): # pragma no cover
-    """ Return a Pyramid session factory using Redis session settings from
-    a Paste config file.
+    """
+    Return a Pyramid session factory using Redis session settings from a Paste
+    config file.
     """
     from .util import _parse_settings
     options = _parse_settings(settings)
@@ -53,6 +69,8 @@ def RedisSessionFactory(
     charset='utf-8',
     errors='strict',
     unix_socket_path=None,
+    custom_connect=None,
+    url=None,
     ):
     """
     Configure a :term:`session factory` which will provide session data from
@@ -123,14 +141,26 @@ def RedisSessionFactory(
     """
 
     def factory(request, new_session_id=get_unique_session_id):
-        # note: will raise ConnectionError if connection is not established
-        redis = getattr(request.registry, '_redis_sessions', None)
-        if redis is None: # pragma no cover
-            redis = Redis(host=host, port=port, db=db, password=password,
-                          socket_timeout=socket_timeout,
-                          connection_pool=connection_pool, charset=charset,
-                          errors=errors, unix_socket_path=unix_socket_path)
-            setattr(request.registry, '_redis_sessions', redis)
+        redis_options = dict(
+            host=host,
+            port=port,
+            db=db,
+            password=password,
+            socket_timeout=socket_timeout,
+            connection_pool=connection_pool,
+            charset=charset,
+            errors=errors,
+            unix_socket_path=unix_socket_path,
+            )
+        # an explicit custom connection handler gets priority
+        if custom_connect is not None:
+            redis = custom_connect(request, **redis_options)
+        # a url connection string gets next priority
+        elif url is not None:
+            redis = get_connection_from_url(request, url, **redis_options)
+        # otherwise use the default
+        else:
+            redis = get_default_connection(request, **redis_options)
 
         cookieval = request.cookies.get(cookie_name)
 

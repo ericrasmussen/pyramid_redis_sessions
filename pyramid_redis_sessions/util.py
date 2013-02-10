@@ -64,7 +64,7 @@ def _parse_settings(settings):
     for k in keys:
         param = k.split('.')[-1]
         value = settings[k]
-        # coerce bools
+        # coerce bools (TODO: use asbool explicitly on known bool settings)
         if hasattr(value, 'lower') and value.lower() in ['true', 'false']:
             value = value.lower() == 'true'
         options[param] = value
