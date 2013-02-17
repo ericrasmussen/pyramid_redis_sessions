@@ -38,7 +38,7 @@ def session_factory_from_settings(settings):
     Convenience method to construct a ``RedisSessionFactory`` from Paste config
     settings. Only settings prefixed with "redis.sessions" will be inspected
     and, if needed, coerced to their appropriate types (for example, casting
-    the ``timeout`` value as an `int`.
+    the ``timeout`` value as an `int`).
 
     Parameters:
 
@@ -113,14 +113,14 @@ def RedisSessionFactory(
 
     ``url``
     A connection string for a Redis server, in the format:
-    redis://username:password@localhost:6379/0
+        redis://username:password@localhost:6379/0
     Default: ``None``.
 
     ``host``
     A string representing the IP of your Redis server. Default: ``localhost``.
 
     ``port``
-    An integer represnting the port of your Redis server. Default: ``6379``.
+    An integer representing the port of your Redis server. Default: ``6379``.
 
     ``db``
     An integer to select a specific database on your Redis server.
@@ -128,7 +128,20 @@ def RedisSessionFactory(
 
     ``password``
     A string password to connect to your Redis server/database if
-    required. Default: ``None``
+    required. Default: ``None``.
+
+    ``client_callable``
+    A python callable that accepts a Pyramid `request` and Redis config options
+    and returns a Redis client such as redis-py's `StrictRedis`.
+    Default: ``None``.
+
+    ``serialize``
+    A function to serialize the session dict for storage in Redis.
+    Default: ``cPickle.dumps``.
+
+    ``deserialize``
+    A function to deserialize the stored session data in Redis.
+    Default: ``cPickle.loads``.
 
     The following arguments are also passed straight to the ``StrictRedis``
     constructor and allow you to further configure the Redis client::
@@ -138,19 +151,6 @@ def RedisSessionFactory(
       charset
       errors
       unix_socket_path
-
-    ``client_callable``
-    A python callable that accepts a Pyramid `request` and Redis config options
-    and returns a Redis client such as redis-py's `StrictRedis`.
-    Default: ``None``
-
-    ``serialize``
-    A function to serialize the session dict for storage in Redis.
-    Default: ``cPickle.dumps``
-
-    ``deserialize``
-    A function to deserialize the stored session data in Redis.
-    Default: ``cPickle.loads``
     """
     def factory(request, new_session_id=get_unique_session_id):
         redis_options = dict(
@@ -174,6 +174,7 @@ def RedisSessionFactory(
         session_id = None
         cookieval = request.cookies.get(cookie_name)
 
+        # if we found a cookie, try to obtain the signed `session_id`
         if cookieval is not None:
             try:
                 session_id = signed_deserialize(cookieval, secret)
@@ -210,14 +211,15 @@ def RedisSessionFactory(
             request.add_response_callback(set_cookie_callback)
             return
 
+        # if we couldn't find an existing `session_id` in a cookie, create one
         if session_id is None:
             session_id = new_session_id(redis, timeout)
             add_cookie(session_id)
 
-        # attempt to find the session by session_id
+        # otherwise attempt to find the session by `session_id`
         session_check = redis.get(session_id)
 
-        # case: found session associated with session_id
+        # if it's a valid `session_id` from a cookie and it's in Redis, use it
         if session_check is not None:
             session = RedisSession(
                 redis,
@@ -228,7 +230,7 @@ def RedisSessionFactory(
                 deserialize=deserialize
                 )
 
-        # case: session id obtained from cookie is not in Redis; begin anew
+        # otherwise start over with a new session id
         else:
             new_id = new_session_id(redis, timeout)
             add_cookie(new_id)
@@ -240,7 +242,7 @@ def RedisSessionFactory(
                 serialize=serialize,
                 deserialize=deserialize
                 )
-            session._rs_new = True
+            session._rs_new = True  # flag it as a newly created session
         return session
 
     return factory
