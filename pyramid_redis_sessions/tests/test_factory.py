@@ -119,3 +119,10 @@ class TestRedisSessionFactory(unittest.TestCase):
         client_callable = lambda req, **kw: redis
         inst = self._makeOne(request, client_callable=client_callable)
         self.assertEqual(inst.redis, redis)
+
+    def test_session_factory_from_settings(self):
+        from .. import session_factory_from_settings
+        request = self._make_request()
+        settings = {'secret': 'secret', 'timeout': '999'}
+        inst = session_factory_from_settings(settings)(request)
+        self.assertEqual(inst.default_timeout, 999)
