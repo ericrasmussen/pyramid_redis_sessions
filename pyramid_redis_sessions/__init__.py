@@ -1,21 +1,11 @@
 import os
 import cPickle
-import binascii
-from redis import Redis
-from functools import partial
-from pyramid.compat import text_
-from zope.interface import implementer
 
 from .session import RedisSession
 
 from .connection import get_default_connection
 
-from .util import (
-    get_unique_session_id,
-    refresh,
-    )
-
-from pyramid.interfaces import ISession
+from .util import get_unique_session_id
 
 from pyramid.session import (
     signed_serialize,
