@@ -113,12 +113,9 @@ class TestRedisSessionFactory(unittest.TestCase):
         new_session = self._makeOne(request)
         self.assertEqual(new_session.timeout, 555)
 
-    def test_custom_connect(self):
+    def test_client_callable(self):
         request = self._make_request()
         redis = DummyRedis()
-        custom_connect = lambda req, **kw: redis
-        inst = self._makeOne(request, custom_connect=custom_connect)
+        client_callable = lambda req, **kw: redis
+        inst = self._makeOne(request, client_callable=client_callable)
         self.assertEqual(inst.redis, redis)
-
-    # TODO: custom encode and decode tests
-

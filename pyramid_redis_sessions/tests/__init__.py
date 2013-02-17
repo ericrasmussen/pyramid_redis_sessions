@@ -1,14 +1,15 @@
 import cPickle
 
 class DummySession(object):
-    def __init__(self, key, redis, timeout=300):
+    def __init__(self, key, redis, timeout=300, serialize=cPickle.dumps):
         self.session_id = key
         self.redis = redis
         self.timeout = timeout
+        self.serialize = serialize
         self.working_dict = {}
 
     def to_redis(self):
-        return cPickle.dumps(self.working_dict)
+        return self.serialize(self.working_dict)
 
 
 class DummyRedis(object):

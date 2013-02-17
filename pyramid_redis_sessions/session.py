@@ -45,21 +45,29 @@ class RedisSession(object):
     A function that takes no arguments and returns nothing, but should have the
     side effect of deleting the session cookie from the ``response`` object.
 
-    ``encode``
+    ``serialize``
     A function to serialize pickleable Python objects. Default:
     ``cPickle.dumps``.
 
-    ``decode``
-    The dual of ``encode``, to convert serialized strings back to Python
+    ``deserialize``
+    The dual of ``serialize``, to convert serialized strings back to Python
     objects. Default: ``cPickle.loads``.
     """
 
-    def __init__(self, redis, session_id, timeout, delete_cookie,
-                 encode=cPickle.dumps, decode=cPickle.loads):
+    def __init__(
+        self,
+        redis,
+        session_id,
+        timeout,
+        delete_cookie,
+        serialize=cPickle.dumps,
+        deserialize=cPickle.loads
+        ):
+
         self.session_id = session_id
         self.redis = redis
-        self.encode = encode
-        self.decode = decode
+        self.serialize = serialize
+        self.deserialize = deserialize
         self.delete_cookie = delete_cookie
         self.created = time.time()
         self.managed_dict = self.from_redis()
@@ -70,17 +78,17 @@ class RedisSession(object):
         return self.managed_dict.get('_rs_timeout', self.default_timeout)
 
     def to_redis(self):
-        """ Encode this session's ``managed_dict`` for storage in Redis.
+        """ Serialize this session's ``managed_dict`` for storage in Redis.
         Primarily used by the ``@persist`` decorator to save the current session
         state to Redis.
         """
-        return self.encode(self.managed_dict)
+        return self.serialize(self.managed_dict)
 
     def from_redis(self):
-        """ Get this session's pickled/encoded ``dict`` from Redis."""
+        """ Get this session's pickled/serialized ``dict`` from Redis."""
         persisted = self.redis.get(self.session_id)
-        decoded = self.decode(persisted)
-        return decoded
+        deserialized = self.deserialize(persisted)
+        return deserialized
 
     # dict modifying methods decorated with @persist
     @persist

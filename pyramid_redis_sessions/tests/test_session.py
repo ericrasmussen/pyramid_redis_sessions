@@ -10,12 +10,12 @@ from . import (
 class TestRedisSession(unittest.TestCase):
     def _makeOne(self, session_id='session.id', timeout=300,
                  delete_cookie=lambda : None,
-                 encode=cPickle.dumps, decode=cPickle.loads):
+                 serialize=cPickle.dumps, deserialize=cPickle.loads):
         from ..session import RedisSession
         redis = DummyRedis()
-        redis.set(session_id, encode({}))
+        redis.set(session_id, serialize({}))
         return RedisSession(redis, session_id, timeout, delete_cookie,
-                         encode=encode, decode=decode)
+                         serialize=serialize, deserialize=deserialize)
 
     def test_delitem(self):
         inst = self._makeOne()
