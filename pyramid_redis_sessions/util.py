@@ -73,7 +73,7 @@ def _parse_settings(settings):
             options[b] = asbool(options[b])
 
     # coerce ints
-    for i in ('port', 'db', 'cookie_max_age'):
+    for i in ('timeout', 'port', 'db', 'cookie_max_age'):
         if i in options:
             options[i] = int(options[i])
 
@@ -81,6 +81,7 @@ def _parse_settings(settings):
     if 'socket_timeout' in options:
         options['socket_timeout'] = float(options['socket_timeout'])
 
+    # only required setting
     if 'secret' not in options:
         raise ConfigurationError('redis.sessions.secret is a required setting')
 

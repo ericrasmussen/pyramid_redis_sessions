@@ -33,7 +33,7 @@ def includeme(config): # pragma no cover
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)
 
-def session_factory_from_settings(settings): # pragma no cover
+def session_factory_from_settings(settings):
     """
     Convenience method to construct a ``RedisSessionFactory`` from Paste config
     settings. Only settings prefixed with "redis.sessions" will be inspected

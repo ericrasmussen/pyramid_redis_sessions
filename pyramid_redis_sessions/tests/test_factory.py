@@ -123,6 +123,7 @@ class TestRedisSessionFactory(unittest.TestCase):
     def test_session_factory_from_settings(self):
         from .. import session_factory_from_settings
         request = self._make_request()
-        settings = {'secret': 'secret', 'timeout': '999'}
+        settings = {'redis.sessions.secret': 'secret',
+                    'redis.sessions.timeout': '999'}
         inst = session_factory_from_settings(settings)(request)
         self.assertEqual(inst.default_timeout, 999)
