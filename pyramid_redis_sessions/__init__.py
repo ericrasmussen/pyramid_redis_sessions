@@ -51,7 +51,6 @@ def session_factory_from_settings(settings): # pragma no cover
 def RedisSessionFactory(
     secret,
     timeout=1200,
-    period=300,
     cookie_name='session',
     cookie_max_age=None,
     cookie_path='/',
@@ -91,10 +90,6 @@ def RedisSessionFactory(
     ``timeout``
     A number of seconds of inactivity before a session times out.
 
-    ``period``
-    Granularity of inactivity checking in seconds (should be lower
-    than timeout).
-
     ``cookie_name``
     The name of the cookie used for sessioning. Default: ``session``.
 
@@ -132,8 +127,8 @@ def RedisSessionFactory(
     A string password to connect to your Redis server/database if
     required. Default: ``None``
 
-    The following arguments are passed straight to the redis-py Redis instance
-    and allow you to further configure the Redis client:
+    The following arguments are passed straight to the redis-py StrictRedis
+    constructor and allow you to further configure the Redis client:
       ``socket_timeout``
       ``connection_pool``
       ``charset``

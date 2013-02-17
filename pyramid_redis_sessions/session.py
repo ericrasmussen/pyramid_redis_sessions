@@ -199,10 +199,10 @@ class RedisSession(object):
         return storage
 
     # RedisSession extra methods
-    def reset_timeout_for_session(self, timeout):
+    def adjust_timeout_for_session(self, timeout_seconds):
         """
-        Resets the timeout for this session to ``timeout`` for the duration
-        of the session. Useful in situations where you want to change the
-        expire time dynamically.
+        Permanently adjusts the timeout for this session to ``timeout_seconds``
+        for as long as this session is active. Useful in situations where you
+        want to change the expire time for a session dynamically.
         """
-        self['_rs_timeout'] = timeout
+        self['_rs_timeout'] = timeout_seconds

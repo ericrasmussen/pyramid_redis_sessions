@@ -103,10 +103,10 @@ class TestRedisSessionFactory(unittest.TestCase):
         inst = self._makeOne(request)
         verifyObject(ISession, inst)
 
-    def test_changed_session_timeout_persists(self):
+    def test_adjusted_session_timeout_persists(self):
         request = self._make_request()
         inst = self._makeOne(request)
-        inst.reset_timeout_for_session(555)
+        inst.adjust_timeout_for_session(555)
         session_id = inst.session_id
         cookieval = self._serialize(session_id)
         request.cookies['session'] = cookieval
@@ -119,3 +119,6 @@ class TestRedisSessionFactory(unittest.TestCase):
         custom_connect = lambda req, **kw: redis
         inst = self._makeOne(request, custom_connect=custom_connect)
         self.assertEqual(inst.redis, redis)
+
+    # TODO: custom encode and decode tests
+

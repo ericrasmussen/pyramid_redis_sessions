@@ -1,4 +1,4 @@
-__version__ = '0.9b3'
+__version__ = '0.9b4'
 
 import os
 
@@ -9,6 +9,7 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
 testing_extras = ['pkginfo', 'nose', 'coverage']
+docs_extras = ['sphinx']
 
 setup(name='pyramid_redis_sessions',
       version=__version__,
@@ -37,6 +38,7 @@ setup(name='pyramid_redis_sessions',
         ],
       entry_points='',
       extras_require = {
-          'testing':testing_extras,
+          'testing': testing_extras,
+          'docs': docs_extras,
           },
 )
