@@ -1,4 +1,3 @@
-import os
 import cPickle
 
 from .session import RedisSession
