@@ -14,8 +14,9 @@ from pyramid.interfaces import ISession
 
 @implementer(ISession)
 class RedisSession(object):
-    """ Implements the Pyramid ISession and IDict interfaces and is returned by
-    the RedisSessionFactory.
+    """
+    Implements the Pyramid ISession and IDict interfaces and is returned by
+    the ``RedisSessionFactory``.
 
     Methods that modify the ``dict`` (get, set, update, etc.) are decorated
     with ``@persist`` to update the persisted copy in Redis and reset the
@@ -196,7 +197,7 @@ class RedisSession(object):
         storage = self.setdefault('_f_' + queue, [])
         if allow_duplicate or (msg not in storage):
             storage.append(msg)
-            self.changed() # notify redis of change to ``storage`` mutable
+            self.changed()  # notify redis of change to ``storage`` mutable
 
     def peek_flash(self, queue=''):
         storage = self.get('_f_' + queue, [])
