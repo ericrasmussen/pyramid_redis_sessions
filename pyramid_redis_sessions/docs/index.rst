@@ -19,7 +19,7 @@ Narrative Documentation
 
    gettingstarted
    advanced
-   api4
+   api
    redis
    contributing
 
