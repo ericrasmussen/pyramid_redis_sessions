@@ -42,9 +42,11 @@ class Test_parse_settings(unittest.TestCase):
 
 
 class Test__insert_session_id_if_unique(unittest.TestCase):
-    def _makeOne(self, redis, timeout=1, session_id='id', encoder=lambda x: x):
+    def _makeOne(self, redis, timeout=1, session_id='id',
+                 serialize=lambda x: x):
         from ..util import _insert_session_id_if_unique
-        return _insert_session_id_if_unique(redis, timeout, session_id, encoder)
+        return _insert_session_id_if_unique(redis, timeout, session_id,
+                                            serialize)
 
     def test_id_is_unique(self):
         redis = DummyRedis()
@@ -75,8 +77,10 @@ class Test_get_unique_session_id(unittest.TestCase):
 
     def _makeOne(self, redis=DummyRedis(), timeout=300):
         from ..util import get_unique_session_id
+        serialize = lambda x: x
         generator = self._makeGenerator()
-        return get_unique_session_id(redis, timeout, generator=generator)
+        return get_unique_session_id(redis, timeout, serialize,
+                                     generator=generator)
 
     def test_id_is_unique(self):
         result = self._makeOne()

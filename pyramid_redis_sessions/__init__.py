@@ -213,7 +213,7 @@ def RedisSessionFactory(
 
         # if we couldn't find an existing `session_id` in a cookie, create one
         if session_id is None:
-            session_id = new_session_id(redis, timeout)
+            session_id = new_session_id(redis, timeout, serialize)
             add_cookie(session_id)
 
         # otherwise attempt to find the session by `session_id`
@@ -232,7 +232,7 @@ def RedisSessionFactory(
 
         # otherwise start over with a new session id
         else:
-            new_id = new_session_id(redis, timeout)
+            new_id = new_session_id(redis, timeout, serialize)
             add_cookie(new_id)
             session = RedisSession(
                 redis,

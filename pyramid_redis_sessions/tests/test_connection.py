@@ -16,7 +16,7 @@ class TestConnection(unittest.TestCase):
         from ..connection import get_default_connection
         options = dict(host='localhost',port=999)
         inst = get_default_connection(self.request,
-                                      redis_connect=DummyRedis,
+                                      redis_client=DummyRedis,
                                       **options)
         self.assertEqual(inst.host, 'localhost')
         self.assertEqual(inst.port, 999)
@@ -26,6 +26,6 @@ class TestConnection(unittest.TestCase):
         url = 'redis://username:password@localhost:6379/0'
         inst = get_default_connection(self.request,
                                       url=url,
-                                      redis_connect=DummyRedis)
+                                      redis_client=DummyRedis)
         self.assertEqual(inst.url, url)
 

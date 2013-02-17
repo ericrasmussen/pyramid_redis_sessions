@@ -14,8 +14,14 @@ class TestRedisSession(unittest.TestCase):
         from ..session import RedisSession
         redis = DummyRedis()
         redis.set(session_id, serialize({}))
-        return RedisSession(redis, session_id, timeout, delete_cookie,
-                         serialize=serialize, deserialize=deserialize)
+        return RedisSession(
+            redis,
+            session_id,
+            timeout,
+            delete_cookie,
+            serialize=serialize,
+            deserialize=deserialize,
+            )
 
     def test_delitem(self):
         inst = self._makeOne()

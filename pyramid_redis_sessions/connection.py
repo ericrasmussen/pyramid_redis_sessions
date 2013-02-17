@@ -34,10 +34,10 @@ Example configuration in python::
 Example configuration from an ini file::
 
     redis.sessions.secret = mysecret
-    redis.sessions.custom_connect = my_cool_app.my_redis_connection_getter
+    redis.sessions.client_callable = my_cool_app.my_redis_client_getter
 
 
-This option is available so that developers can define their own redis
+This option is available so that developers can define their own Redis
 instances as needed, but most users should not need to customize how they
 connect.
 """
@@ -46,10 +46,10 @@ from redis import StrictRedis
 
 def get_default_connection(request,
                            url=None,
-                           redis_connect=StrictRedis,
+                           redis_client=StrictRedis,
                            **redis_options):
     """
-    Default redis connection handler. Once a connection is established it is
+    Default Redis connection handler. Once a connection is established it is
     saved in `request.registry`.
 
     Parameters:
@@ -78,9 +78,9 @@ def get_default_connection(request,
 
     # otherwise create a new connection
     if url is not None:
-        redis = redis_connect.from_url(url, **redis_options)
+        redis = redis_client.from_url(url, **redis_options)
     else:
-        redis = redis_connect(**redis_options)
+        redis = redis_client(**redis_options)
 
     # save the new connection in the registry
     setattr(request.registry, '_redis_sessions', redis)
