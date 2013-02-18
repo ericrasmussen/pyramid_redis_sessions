@@ -1,21 +1,30 @@
 import cPickle
 
 class DummySession(object):
-    def __init__(self, key, redis, timeout=300):
+    def __init__(self, key, redis, timeout=300, serialize=cPickle.dumps):
         self.session_id = key
         self.redis = redis
         self.timeout = timeout
+        self.serialize = serialize
         self.working_dict = {}
 
     def to_redis(self):
-        return cPickle.dumps(self.working_dict)
+        return self.serialize(self.working_dict)
 
 
 class DummyRedis(object):
     def __init__(self, raise_watcherror=False, **kw):
+        self.url = None
         self.timeouts = {}
         self.store = {}
         self.pipeline = lambda : DummyPipeline(self.store, raise_watcherror)
+        self.__dict__.update(kw)
+
+    @classmethod
+    def from_url(cls, url):
+        redis = DummyRedis()
+        redis.url = url
+        return redis
 
     def get(self, key):
         return self.store.get(key)

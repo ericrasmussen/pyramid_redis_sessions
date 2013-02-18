@@ -12,7 +12,8 @@ class TestRedisSessionFactory(unittest.TestCase):
     def _get_session_id(self, request):
         from ..util import get_unique_session_id
         redis = request.registry._redis_sessions
-        session_id = get_unique_session_id(redis, timeout=100)
+        session_id = get_unique_session_id(redis, timeout=100,
+                                           serialize=cPickle.dumps)
         return session_id
 
     def _serialize(self, session_id, secret='secret'):
@@ -48,21 +49,25 @@ class TestRedisSessionFactory(unittest.TestCase):
         deserialized_cookie = signed_deserialize(cookieval, invalid_secret)
         self.assertNotEqual(deserialized_cookie, session.session_id)
 
-    def test_set_cookie_on_exception(self):
+    def test_cookie_on_exception_false_with_exception(self):
         import webob
         request = self._make_request()
         request.exception = True
         session = self._makeOne(request, cookie_on_exception=False)
+        callbacks = request.response_callbacks
         response = webob.Response()
+        processed_callback = callbacks[0](request, response)
         self.assertNotEqual(response.headerlist[-1][0], 'Set-Cookie')
 
-    def test_set_cookie_on_exception_no_request_exception(self):
+    def test_cookie_on_exception_false_no_exception(self):
         import webob
         request = self._make_request()
         request.exception = None
         session = self._makeOne(request, cookie_on_exception=False)
+        callbacks = request.response_callbacks
         response = webob.Response()
-        self.assertNotEqual(response.headerlist[-1][0], 'Set-Cookie')
+        processed_callback = callbacks[0](request, response)
+        self.assertEqual(response.headerlist[-1][0], 'Set-Cookie')
 
     def test_cookie_callback(self):
         import webob
@@ -99,12 +104,27 @@ class TestRedisSessionFactory(unittest.TestCase):
         inst = self._makeOne(request)
         verifyObject(ISession, inst)
 
-    def test_changed_session_timeout_persists(self):
+    def test_adjusted_session_timeout_persists(self):
         request = self._make_request()
         inst = self._makeOne(request)
-        inst.reset_timeout_for_session(555)
+        inst.adjust_timeout_for_session(555)
         session_id = inst.session_id
         cookieval = self._serialize(session_id)
         request.cookies['session'] = cookieval
         new_session = self._makeOne(request)
         self.assertEqual(new_session.timeout, 555)
+
+    def test_client_callable(self):
+        request = self._make_request()
+        redis = DummyRedis()
+        client_callable = lambda req, **kw: redis
+        inst = self._makeOne(request, client_callable=client_callable)
+        self.assertEqual(inst.redis, redis)
+
+    def test_session_factory_from_settings(self):
+        from .. import session_factory_from_settings
+        request = self._make_request()
+        settings = {'redis.sessions.secret': 'secret',
+                    'redis.sessions.timeout': '999'}
+        inst = session_factory_from_settings(settings)(request)
+        self.assertEqual(inst.default_timeout, 999)

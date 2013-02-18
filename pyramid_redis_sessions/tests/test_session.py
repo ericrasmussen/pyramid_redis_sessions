@@ -10,12 +10,18 @@ from . import (
 class TestRedisSession(unittest.TestCase):
     def _makeOne(self, session_id='session.id', timeout=300,
                  delete_cookie=lambda : None,
-                 encode=cPickle.dumps, decode=cPickle.loads):
-        from ..redissession import RedisSession
+                 serialize=cPickle.dumps, deserialize=cPickle.loads):
+        from ..session import RedisSession
         redis = DummyRedis()
-        redis.set(session_id, encode({}))
-        return RedisSession(redis, session_id, timeout, delete_cookie,
-                         encode=encode, decode=decode)
+        redis.set(session_id, serialize({}))
+        return RedisSession(
+            redis,
+            session_id,
+            timeout,
+            delete_cookie,
+            serialize=serialize,
+            deserialize=deserialize,
+            )
 
     def test_delitem(self):
         inst = self._makeOne()
@@ -199,7 +205,7 @@ class TestRedisSession(unittest.TestCase):
 
     def test_new(self):
         inst = self._makeOne()
-        inst._v_new = True
+        inst._rs_new = True
         self.assertTrue(inst.new)
 
     def test_invalidate_dict(self):
@@ -257,7 +263,7 @@ class TestRedisSession(unittest.TestCase):
         inst = self._makeOne()
         verifyObject(ISession, inst)
 
-    def test_reset_timeout_for_session(self):
+    def test_adjust_timeout_for_session(self):
         inst = self._makeOne(timeout=100)
-        inst.reset_timeout_for_session(200)
+        inst.adjust_timeout_for_session(200)
         self.assertEqual(inst.timeout, 200)

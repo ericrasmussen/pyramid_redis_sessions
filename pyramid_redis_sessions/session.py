@@ -14,8 +14,9 @@ from pyramid.interfaces import ISession
 
 @implementer(ISession)
 class RedisSession(object):
-    """ Implements the Pyramid ISession and IDict interfaces and is returned by
-    the RedisSessionFactory.
+    """
+    Implements the Pyramid ISession and IDict interfaces and is returned by
+    the ``RedisSessionFactory``.
 
     Methods that modify the ``dict`` (get, set, update, etc.) are decorated
     with ``@persist`` to update the persisted copy in Redis and reset the
@@ -45,21 +46,29 @@ class RedisSession(object):
     A function that takes no arguments and returns nothing, but should have the
     side effect of deleting the session cookie from the ``response`` object.
 
-    ``encode``
+    ``serialize``
     A function to serialize pickleable Python objects. Default:
     ``cPickle.dumps``.
 
-    ``decode``
-    The dual of ``encode``, to convert serialized strings back to Python
+    ``deserialize``
+    The dual of ``serialize``, to convert serialized strings back to Python
     objects. Default: ``cPickle.loads``.
     """
 
-    def __init__(self, redis, session_id, timeout, delete_cookie,
-                 encode=cPickle.dumps, decode=cPickle.loads):
+    def __init__(
+        self,
+        redis,
+        session_id,
+        timeout,
+        delete_cookie,
+        serialize=cPickle.dumps,
+        deserialize=cPickle.loads
+        ):
+
         self.session_id = session_id
         self.redis = redis
-        self.encode = encode
-        self.decode = decode
+        self.serialize = serialize
+        self.deserialize = deserialize
         self.delete_cookie = delete_cookie
         self.created = time.time()
         self.managed_dict = self.from_redis()
@@ -70,17 +79,17 @@ class RedisSession(object):
         return self.managed_dict.get('_rs_timeout', self.default_timeout)
 
     def to_redis(self):
-        """ Encode this session's ``managed_dict`` for storage in Redis.
+        """ Serialize this session's ``managed_dict`` for storage in Redis.
         Primarily used by the ``@persist`` decorator to save the current session
         state to Redis.
         """
-        return self.encode(self.managed_dict)
+        return self.serialize(self.managed_dict)
 
     def from_redis(self):
-        """ Get this session's pickled/encoded ``dict`` from Redis."""
+        """ Get this session's pickled/serialized ``dict`` from Redis."""
         persisted = self.redis.get(self.session_id)
-        decoded = self.decode(persisted)
-        return decoded
+        deserialized = self.deserialize(persisted)
+        return deserialized
 
     # dict modifying methods decorated with @persist
     @persist
@@ -164,7 +173,7 @@ class RedisSession(object):
     # session methods persist or refresh using above dict methods
     @property
     def new(self):
-        return getattr(self, '_v_new', False)
+        return getattr(self, '_rs_new', False)
 
     def invalidate(self):
         """ Delete all keys unique to this session and expire cookie."""
@@ -188,7 +197,7 @@ class RedisSession(object):
         storage = self.setdefault('_f_' + queue, [])
         if allow_duplicate or (msg not in storage):
             storage.append(msg)
-            self.changed() # notify redis of change to ``storage`` mutable
+            self.changed()  # notify redis of change to ``storage`` mutable
 
     def peek_flash(self, queue=''):
         storage = self.get('_f_' + queue, [])
@@ -199,10 +208,10 @@ class RedisSession(object):
         return storage
 
     # RedisSession extra methods
-    def reset_timeout_for_session(self, timeout):
+    def adjust_timeout_for_session(self, timeout_seconds):
         """
-        Resets the timeout for this session to ``timeout`` for the duration
-        of the session. Useful in situations where you want to change the
-        expire time dynamically.
+        Permanently adjusts the timeout for this session to ``timeout_seconds``
+        for as long as this session is active. Useful in situations where you
+        want to change the expire time for a session dynamically.
         """
-        self['_rs_timeout'] = timeout
+        self['_rs_timeout'] = timeout_seconds
