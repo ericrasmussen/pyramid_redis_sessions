@@ -1,6 +1,10 @@
 import os
 import time
-import cPickle
+try:
+    import cPickle
+except ImportError:
+    # python 3 pickle module
+    import pickle as cPickle
 import binascii
 from pyramid.compat import text_
 from zope.interface import implementer
@@ -8,6 +12,7 @@ from zope.interface import implementer
 from .util import (
     persist,
     refresh,
+    to_unicode,
     )
 
 from pyramid.interfaces import ISession
@@ -147,7 +152,7 @@ class RedisSession(object):
 
     @refresh
     def has_key(self, key):
-        return self.managed_dict.has_key(key)
+        return key in self.managed_dict
 
     @refresh
     def values(self):
@@ -155,15 +160,27 @@ class RedisSession(object):
 
     @refresh
     def itervalues(self):
-        return self.managed_dict.itervalues()
+        try:
+            values = self.managed_dict.itervalues() 
+        except AttributeError:
+            values = self.managed_dict.values() 
+        return values
 
     @refresh
     def iteritems(self):
-        return self.managed_dict.iteritems()
+        try:
+            items = self.managed_dict.iteritems() 
+        except AttributeError:
+            items = self.managed_dict.items() 
+        return items
 
     @refresh
     def iterkeys(self):
-        return self.managed_dict.iterkeys()
+        try:
+            keys = self.managed_dict.iterkeys() 
+        except AttributeError:
+            keys = self.managed_dict.keys() 
+        return keys
 
     @persist
     def changed(self):
@@ -190,7 +207,7 @@ class RedisSession(object):
         if token is None:
             token = self.new_csrf_token()
         else:
-            token = unicode(token)
+            token = to_unicode(token)
         return token
 
     def flash(self, msg, queue='', allow_duplicate=True):

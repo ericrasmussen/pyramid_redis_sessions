@@ -1,5 +1,9 @@
 import os
-import cPickle
+try:
+    import cPickle
+except ImportError:
+    # py3 pickle module
+    import pickle as cPickle
 import unittest
 
 from . import (
@@ -144,7 +148,10 @@ class TestRedisSession(unittest.TestCase):
         inst['b'] = 2
         expected_values = [1, 2]
         actual_values = inst.values()
-        actual_values.sort()
+        try:
+            actual_values.sort()
+        except AttributeError:
+            actual_values = sorted(actual_values)
         self.assertEqual(actual_values, expected_values)
 
     def test_itervalues(self):
