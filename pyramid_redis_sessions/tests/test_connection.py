@@ -29,3 +29,16 @@ class TestConnection(unittest.TestCase):
                                       redis_client=DummyRedis)
         self.assertEqual(inst.url, url)
 
+    def test_get_default_connection_url_removes_duplicates(self):
+        from ..connection import get_default_connection
+        options = dict(host='localhost', port=999, password='password', db=5)
+        url = 'redis://username:password@localhost:6379/0'
+        inst = get_default_connection(self.request,
+                                      url=url,
+                                      redis_client=DummyRedis,
+                                      **options)
+        self.assertEqual(inst.url, url)
+        self.assertNotIn('password', inst.opts)
+        self.assertNotIn('host', inst.opts)
+        self.assertNotIn('port', inst.opts)
+        self.assertNotIn('db', inst.opts)

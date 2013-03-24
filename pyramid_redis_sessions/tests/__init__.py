@@ -21,9 +21,10 @@ class DummyRedis(object):
         self.__dict__.update(kw)
 
     @classmethod
-    def from_url(cls, url):
+    def from_url(cls, url, **opts):
         redis = DummyRedis()
         redis.url = url
+        redis.opts = opts
         return redis
 
     def get(self, key):
