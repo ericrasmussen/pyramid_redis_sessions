@@ -78,6 +78,11 @@ def get_default_connection(request,
 
     # otherwise create a new connection
     if url is not None:
+        # remove defaults to avoid duplicating settings in the `url`
+        redis_options.pop('password', None)
+        redis_options.pop('host', None)
+        redis_options.pop('port', None)
+        redis_options.pop('db', None)
         redis = redis_client.from_url(url, **redis_options)
     else:
         redis = redis_client(**redis_options)
