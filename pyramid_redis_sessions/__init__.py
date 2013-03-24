@@ -1,4 +1,8 @@
-import cPickle
+try:
+    import cPickle
+except ImportError: # pragma: no cover
+    # python 3 pickle module
+    import pickle as cPickle
 
 from .session import RedisSession
 

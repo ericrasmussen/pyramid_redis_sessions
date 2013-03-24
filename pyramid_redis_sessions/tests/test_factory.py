@@ -1,4 +1,8 @@
-import cPickle
+try:
+    import cPickle
+except ImportError: # pragma: no cover
+    # py3 pickle module
+    import pickle as cPickle
 import unittest
 from pyramid import testing
 

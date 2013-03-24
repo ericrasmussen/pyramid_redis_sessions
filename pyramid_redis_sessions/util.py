@@ -1,10 +1,39 @@
 import os
 import time
 import random
+import sys
 from hashlib import sha1
 from pyramid.settings import asbool
 from redis.exceptions import WatchError
 from pyramid.exceptions import ConfigurationError
+
+PY3 = sys.version_info[0] == 3
+
+def to_binary(value, enc="UTF-8"):
+    if PY3 and isinstance(value, str): # pragma: no cover
+        value = value.encode(enc)
+    return value
+
+def to_unicode(value): # pragma: no cover
+    if not PY3:
+        value = unicode(value)
+    return value
+
+def iterkeys(d, **kw): # pragma: no cover
+    """Return an iterator over the keys of a dictionary."""
+    return iter(getattr(d, _iterkeys)(**kw))
+
+def itervalues(d, **kw): # pragma: no cover
+    """Return an iterator over the values of a dictionary."""
+    return iter(getattr(d, _itervalues)(**kw))
+
+def iteritems(d, **kw): # pragma: no cover
+    """Return an iterator over the (key, value) pairs of a dictionary."""
+    return iter(getattr(d, _iteritems)(**kw))
+
+def iterlists(d, **kw): # pragma: no cover
+    """Return an iterator over the (key, [values]) pairs of a dictionary."""
+    return iter(getattr(d, _iterlists)(**kw))
 
 pid = os.getpid()
 _CURRENT_PERIOD = None
@@ -21,7 +50,7 @@ def _generate_session_id():
     global _CURRENT_PERIOD
     if this_period != _CURRENT_PERIOD:
         _CURRENT_PERIOD = this_period
-    source = '%s%s%s' % (rand, when, pid)
+    source = to_binary('%s%s%s' % (rand, when, pid))
     session_id = sha1(source).hexdigest()
     return session_id
 

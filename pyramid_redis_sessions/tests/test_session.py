@@ -1,5 +1,11 @@
 import os
-import cPickle
+
+try:
+    import cPickle
+except ImportError: # pragma: no cover
+    # py3 pickle module
+    import pickle as cPickle
+
 import unittest
 
 from . import (
@@ -143,8 +149,7 @@ class TestRedisSession(unittest.TestCase):
         inst['a'] = 1
         inst['b'] = 2
         expected_values = [1, 2]
-        actual_values = inst.values()
-        actual_values.sort()
+        actual_values = sorted(inst.values())
         self.assertEqual(actual_values, expected_values)
 
     def test_itervalues(self):
