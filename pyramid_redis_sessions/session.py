@@ -1,10 +1,12 @@
 import os
 import time
+
 try:
     import cPickle
-except ImportError:
+except ImportError: # pragma: no cover
     # python 3 pickle module
     import pickle as cPickle
+
 import binascii
 from pyramid.compat import text_
 from zope.interface import implementer
@@ -161,25 +163,25 @@ class RedisSession(object):
     @refresh
     def itervalues(self):
         try:
-            values = self.managed_dict.itervalues() 
-        except AttributeError:
-            values = self.managed_dict.values() 
+            values = self.managed_dict.itervalues()
+        except AttributeError: # pragma: no cover
+            values = self.managed_dict.values()
         return values
 
     @refresh
     def iteritems(self):
         try:
-            items = self.managed_dict.iteritems() 
-        except AttributeError:
-            items = self.managed_dict.items() 
+            items = self.managed_dict.iteritems()
+        except AttributeError: # pragma: no cover
+            items = self.managed_dict.items()
         return items
 
     @refresh
     def iterkeys(self):
         try:
-            keys = self.managed_dict.iterkeys() 
-        except AttributeError:
-            keys = self.managed_dict.keys() 
+            keys = self.managed_dict.iterkeys()
+        except AttributeError: # pragma: no cover
+            keys = self.managed_dict.keys()
         return keys
 
     @persist

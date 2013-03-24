@@ -1,6 +1,6 @@
 try:
     import cPickle
-except ImportError:
+except ImportError: # pragma: no cover
     # py3 pickle module
     import pickle as cPickle
 import unittest
