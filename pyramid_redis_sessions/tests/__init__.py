@@ -1,4 +1,8 @@
-import cPickle
+try:
+    import cPickle
+except ImportError:
+    # py3 pickle module
+    import pickle as cPickle
 
 class DummySession(object):
     def __init__(self, key, redis, timeout=300, serialize=cPickle.dumps):

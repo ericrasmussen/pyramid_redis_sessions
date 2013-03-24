@@ -1,4 +1,8 @@
-import cPickle
+try:
+    import cPickle
+except ImportError:
+    # python 3 pickle module
+    import pickle as cPickle
 
 from .session import RedisSession
 
