@@ -8,12 +8,15 @@ from .session import RedisSession
 
 from .connection import get_default_connection
 
-from .util import get_unique_session_id
+from .util import (
+    get_unique_session_id,
+    _generate_session_id,
+)
 
 from pyramid.session import (
     signed_serialize,
     signed_deserialize,
-    )
+)
 
 def includeme(config): # pragma no cover
     """
@@ -76,6 +79,7 @@ def RedisSessionFactory(
     client_callable=None,
     serialize=cPickle.dumps,
     deserialize=cPickle.loads,
+    session_id_generator=_generate_session_id,
     ):
     """
     Constructs and returns a session factory that will provide session data
@@ -217,7 +221,7 @@ def RedisSessionFactory(
 
         # if we couldn't find an existing `session_id` in a cookie, create one
         if session_id is None:
-            session_id = new_session_id(redis, timeout, serialize)
+            session_id = new_session_id(redis, timeout, serialize, generator=session_id_generator)
             add_cookie(session_id)
 
         # otherwise attempt to find the session by `session_id`
@@ -236,7 +240,7 @@ def RedisSessionFactory(
 
         # otherwise start over with a new session id
         else:
-            new_id = new_session_id(redis, timeout, serialize)
+            new_id = new_session_id(redis, timeout, serialize, generator=session_id_generator)
             add_cookie(new_id)
             session = RedisSession(
                 redis,
