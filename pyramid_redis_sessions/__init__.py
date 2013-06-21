@@ -219,15 +219,10 @@ def RedisSessionFactory(
             request.add_response_callback(set_cookie_callback)
             return
 
-        # if we couldn't find an existing `session_id` in a cookie, create one
-        if session_id is None:
-            session_id = new_session_id(redis, timeout, serialize, generator=session_id_generator)
-            add_cookie(session_id)
-
-        # otherwise attempt to find the session by `session_id`
+        # attempt to find the session in redis by `session_id`
         session_check = redis.get(session_id)
 
-        # if it's a valid `session_id` from a cookie and it's in Redis, use it
+        # if the signed session from the cookie exists in redis, load it
         if session_check is not None:
             session = RedisSession(
                 redis,
@@ -240,7 +235,8 @@ def RedisSessionFactory(
 
         # otherwise start over with a new session id
         else:
-            new_id = new_session_id(redis, timeout, serialize, generator=session_id_generator)
+            new_id = new_session_id(redis, timeout, serialize,
+                                    generator=session_id_generator)
             add_cookie(new_id)
             session = RedisSession(
                 redis,
