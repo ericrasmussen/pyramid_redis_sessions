@@ -33,9 +33,10 @@ def includeme(config): # pragma no cover
     settings = config.registry.settings
 
     # special rule for converting dotted python paths to callables
-    for option in ('custom_connect', 'encode', 'decode'):
-        if option in settings:
-            settings[option] = config.maybe_dotted(settings[option])
+    for option in ('custom_connect', 'encode', 'decode', 'id_generator'):
+        key = 'redis.sessions.%s' % option
+        if key in settings:
+            settings[key] = config.maybe_dotted(settings[key])
 
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)
@@ -79,7 +80,7 @@ def RedisSessionFactory(
     client_callable=None,
     serialize=cPickle.dumps,
     deserialize=cPickle.loads,
-    session_id_generator=_generate_session_id,
+    id_generator=_generate_session_id,
     ):
     """
     Constructs and returns a session factory that will provide session data
@@ -150,6 +151,12 @@ def RedisSessionFactory(
     ``deserialize``
     A function to deserialize the stored session data in Redis.
     Default: ``cPickle.loads``.
+
+    ``id_generator``
+    A function to create a unique ID to be used as the session key when a
+    session is first created.
+    Default: private function that uses sha1 with the time and random elements
+    to create a 40 character unique ID.
 
     The following arguments are also passed straight to the ``StrictRedis``
     constructor and allow you to further configure the Redis client::
@@ -236,7 +243,7 @@ def RedisSessionFactory(
         # otherwise start over with a new session id
         else:
             new_id = new_session_id(redis, timeout, serialize,
-                                    generator=session_id_generator)
+                                    generator=id_generator)
             add_cookie(new_id)
             session = RedisSession(
                 redis,

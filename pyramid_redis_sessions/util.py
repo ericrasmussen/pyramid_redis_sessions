@@ -54,6 +54,15 @@ def _generate_session_id():
     session_id = sha1(source).hexdigest()
     return session_id
 
+def prefixed_id(prefix='session:'):
+    """
+    Adds a prefix to the unique session id, for cases where you want to
+    visually distinguish keys in redis.
+    """
+    session_id = _generate_session_id()
+    prefixed_id = prefix + session_id
+    return prefixed_id
+
 def _insert_session_id_if_unique(
     redis,
     timeout,
@@ -96,7 +105,6 @@ def get_unique_session_id(
             )
         if attempt is not None:
             return attempt
-
 
 def _parse_settings(settings):
     """
