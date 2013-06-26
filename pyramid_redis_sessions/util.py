@@ -3,6 +3,7 @@ import time
 import random
 import sys
 from hashlib import sha1
+from functools import partial
 from pyramid.settings import asbool
 from redis.exceptions import WatchError
 from pyramid.exceptions import ConfigurationError
@@ -137,9 +138,19 @@ def _parse_settings(settings):
     if 'socket_timeout' in options:
         options['socket_timeout'] = float(options['socket_timeout'])
 
+    # check for settings conflict
+    if 'prefix' in options and 'id_generator' in options:
+        err = 'cannot specify custom id_generator and a key prefix'
+        raise ConfigurationError(err)
+
     # only required setting
     if 'secret' not in options:
         raise ConfigurationError('redis.sessions.secret is a required setting')
+
+    # convenience setting for overriding key prefixes
+    if 'prefix' in options:
+        prefix = options.pop('prefix')
+        options['id_generator'] = partial(prefixed_id, prefix=prefix)
 
     return options
 
