@@ -85,3 +85,20 @@ there will be a performance penalty for encrypting and decrypting all session
 data all the time. If you only need to encrypt some sensitive data, a simpler
 solution would be adding the encrypted data to the session and decrypting it
 when you retrieve it from the session.
+
+
+Overriding the id_generator
+---------------------------
+`pyramid_redis_sessions` has a sensible and recommended default for generating
+unique session keys. You don't need to specify anything to use it.
+
+However, if you'd like to prefix the keys (typically for visual inspection in
+redis) you can use::
+
+    redis.sessions.prefix = mycoolprefix
+
+And if for any reason you want to generate unique IDs on your own (not
+recommended) or using a particular UID function, you can specify
+a callable with::
+
+    redis.sessions.id_generator = some_library.some_uid_generating_function
