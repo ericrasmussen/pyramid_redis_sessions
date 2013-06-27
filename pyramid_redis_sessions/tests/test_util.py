@@ -40,6 +40,13 @@ class Test_parse_settings(unittest.TestCase):
         settings = {}
         self.assertRaises(ConfigurationError, self._makeOne, settings)
 
+    def test_prefix_and_generator_raises_error(self):
+        from pyramid.exceptions import ConfigurationError
+        settings = {'redis.sessions.secret': 'test',
+                    'redis.sessions.prefix': 'test',
+                    'redis.sessions.id_generator': 'test'}
+        self.assertRaises(ConfigurationError, self._makeOne, settings)
+
 
 class Test__insert_session_id_if_unique(unittest.TestCase):
     def _makeOne(self, redis, timeout=1, session_id='id',
