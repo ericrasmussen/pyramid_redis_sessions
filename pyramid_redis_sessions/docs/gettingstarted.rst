@@ -79,7 +79,7 @@ these settings, see :doc:`api`. Otherwise, keep reading for the quick list::
     redis.sessions.prefix = mycoolprefix
 
     # or you can supply your own UID generator callable for session keys
-    redis.sessions.id_generator = uuid4
+    redis.sessions.id_generator = niftyuid
 
 Initialization
 --------------
