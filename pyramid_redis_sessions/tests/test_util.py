@@ -47,6 +47,13 @@ class Test_parse_settings(unittest.TestCase):
                     'redis.sessions.id_generator': 'test'}
         self.assertRaises(ConfigurationError, self._makeOne, settings)
 
+    def test_prefix_in_options(self):
+        settings = {'redis.sessions.secret': 'test',
+                    'redis.sessions.prefix': 'testprefix'}
+        inst = self._makeOne(settings)
+        implicit_generator = inst['id_generator']
+        self.assertIn('testprefix', implicit_generator())
+
 
 class Test__insert_session_id_if_unique(unittest.TestCase):
     def _makeOne(self, redis, timeout=1, session_id='id',
