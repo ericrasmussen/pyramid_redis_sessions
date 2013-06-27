@@ -103,6 +103,17 @@ class Test__generate_session_id(unittest.TestCase):
         result = inst()
         self.assertEqual(len(result), 40)
 
+class Test_prefixed_id(unittest.TestCase):
+    def _makeOne(self):
+        from ..util import prefixed_id
+        return prefixed_id
+
+    def test_it(self):
+        inst = self._makeOne()
+        result = inst('prefix')
+        self.assertEqual(len(result), 46)
+        self.assertEqual(result[:6], 'prefix')
+
 
 class Test_persist_decorator(unittest.TestCase):
     def _makeOne(self, wrapped):
