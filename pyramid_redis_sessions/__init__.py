@@ -65,7 +65,7 @@ def RedisSessionFactory(
     cookie_path='/',
     cookie_domain=None,
     cookie_secure=False,
-    cookie_httponly=False,
+    cookie_httponly=True,
     cookie_on_exception=True,
     url=None,
     host='localhost',
