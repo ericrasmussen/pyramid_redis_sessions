@@ -35,3 +35,24 @@ Changelog
                  * removing unused imports
                  * many updates and additions to docstrings/comments
                  * moving the redis connection/client logic to a new module
+
+-06/30/2013: New configuration options:
+
+                * redis.sessions.client_callable (supply your own redis client)
+                * redis.sessions.serialize (use your own pickling function)
+                * redis.sessions.deserialize (use your own unpickling function)
+                * redis.sessions.id_generator (callable to generate session IDs)
+                * redis.sessions.prefix (add a prefix to session IDs in redis)
+
+             BREAKING CHANGE: cookie_httponly now defaults to True. If you are
+               currently relying on outside scripts being able to access the
+               session cookie (a bad idea to begin with), you will need to
+               explicitly set::
+
+                   redis.sessions.cookie_httponly = False
+
+               For most (likely all) users, you will not notice any difference.
+
+               Reference: https://www.owasp.org/index.php/HttpOnly
+
+

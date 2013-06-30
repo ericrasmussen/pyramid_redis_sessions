@@ -75,6 +75,11 @@ these settings, see :doc:`api`. Otherwise, keep reading for the quick list::
     redis.sessions.serialize = cPickle.dumps
     redis.sessions.deserialize = cPickle.loads
 
+    # you can specify a prefix to be used with session keys in redis
+    redis.sessions.prefix = mycoolprefix
+
+    # or you can supply your own UID generator callable for session keys
+    redis.sessions.id_generator = niftyuid
 
 Initialization
 --------------

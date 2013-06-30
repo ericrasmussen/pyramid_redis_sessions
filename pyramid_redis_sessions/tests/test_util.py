@@ -40,6 +40,20 @@ class Test_parse_settings(unittest.TestCase):
         settings = {}
         self.assertRaises(ConfigurationError, self._makeOne, settings)
 
+    def test_prefix_and_generator_raises_error(self):
+        from pyramid.exceptions import ConfigurationError
+        settings = {'redis.sessions.secret': 'test',
+                    'redis.sessions.prefix': 'test',
+                    'redis.sessions.id_generator': 'test'}
+        self.assertRaises(ConfigurationError, self._makeOne, settings)
+
+    def test_prefix_in_options(self):
+        settings = {'redis.sessions.secret': 'test',
+                    'redis.sessions.prefix': 'testprefix'}
+        inst = self._makeOne(settings)
+        implicit_generator = inst['id_generator']
+        self.assertIn('testprefix', implicit_generator())
+
 
 class Test__insert_session_id_if_unique(unittest.TestCase):
     def _makeOne(self, redis, timeout=1, session_id='id',
@@ -102,6 +116,17 @@ class Test__generate_session_id(unittest.TestCase):
         inst = self._makeOne()
         result = inst()
         self.assertEqual(len(result), 40)
+
+class Test_prefixed_id(unittest.TestCase):
+    def _makeOne(self):
+        from ..util import prefixed_id
+        return prefixed_id
+
+    def test_it(self):
+        inst = self._makeOne()
+        result = inst('prefix')
+        self.assertEqual(len(result), 46)
+        self.assertEqual(result[:6], 'prefix')
 
 
 class Test_persist_decorator(unittest.TestCase):

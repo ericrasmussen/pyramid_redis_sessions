@@ -3,6 +3,7 @@ import time
 import random
 import sys
 from hashlib import sha1
+from functools import partial
 from pyramid.settings import asbool
 from redis.exceptions import WatchError
 from pyramid.exceptions import ConfigurationError
@@ -54,6 +55,15 @@ def _generate_session_id():
     session_id = sha1(source).hexdigest()
     return session_id
 
+def prefixed_id(prefix='session:'):
+    """
+    Adds a prefix to the unique session id, for cases where you want to
+    visually distinguish keys in redis.
+    """
+    session_id = _generate_session_id()
+    prefixed_id = prefix + session_id
+    return prefixed_id
+
 def _insert_session_id_if_unique(
     redis,
     timeout,
@@ -97,7 +107,6 @@ def get_unique_session_id(
         if attempt is not None:
             return attempt
 
-
 def _parse_settings(settings):
     """
     Convenience function to collect settings prefixed by 'redis.sessions' and
@@ -129,9 +138,19 @@ def _parse_settings(settings):
     if 'socket_timeout' in options:
         options['socket_timeout'] = float(options['socket_timeout'])
 
+    # check for settings conflict
+    if 'prefix' in options and 'id_generator' in options:
+        err = 'cannot specify custom id_generator and a key prefix'
+        raise ConfigurationError(err)
+
     # only required setting
     if 'secret' not in options:
         raise ConfigurationError('redis.sessions.secret is a required setting')
+
+    # convenience setting for overriding key prefixes
+    if 'prefix' in options:
+        prefix = options.pop('prefix')
+        options['id_generator'] = partial(prefixed_id, prefix=prefix)
 
     return options
 
