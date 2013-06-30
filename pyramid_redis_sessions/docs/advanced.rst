@@ -89,16 +89,18 @@ when you retrieve it from the session.
 
 Overriding the id_generator
 ---------------------------
-`pyramid_redis_sessions` has a sensible and recommended default for generating
-unique session keys. You don't need to specify anything to use it.
+`pyramid_redis_sessions` has a sensible and recommended default for quickly
+generating unique session keys. You don't need to specify anything to use it.
 
 However, if you'd like to prefix the keys (typically for visual inspection in
 redis) you can use::
 
     redis.sessions.prefix = mycoolprefix
 
-And if for any reason you want to generate unique IDs on your own (not
-recommended) or using a particular UID function, you can specify
-a callable with::
+And if for any reason you want to generate unique IDs on your own or using a
+particular UID function, you can specify a callable with::
 
     redis.sessions.id_generator = some_library.some_uid_generating_function
+
+This is useful when you want to increase security at the cost of performance,
+reduce integrity for greater speed on a small internal app, etc.
