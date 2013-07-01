@@ -1,8 +1,6 @@
 import os
-import time
-import random
 import sys
-from hashlib import sha1
+from hashlib import sha256
 from functools import partial
 from pyramid.settings import asbool
 from redis.exceptions import WatchError
@@ -10,8 +8,8 @@ from pyramid.exceptions import ConfigurationError
 
 PY3 = sys.version_info[0] == 3
 
-def to_binary(value, enc="UTF-8"):
-    if PY3 and isinstance(value, str): # pragma: no cover
+def to_binary(value, enc="UTF-8"): # pragma: no cover
+    if PY3 and isinstance(value, str):
         value = value.encode(enc)
     return value
 
@@ -36,24 +34,18 @@ def iterlists(d, **kw): # pragma: no cover
     """Return an iterator over the (key, [values]) pairs of a dictionary."""
     return iter(getattr(d, _iterlists)(**kw))
 
-pid = os.getpid()
-_CURRENT_PERIOD = None
 
 def _generate_session_id():
     """
-    Returns opaque 40-character session id
-    An example is: e193a01ecf8d30ad0affefd332ce934e32ffce72
+    Produces a random 64 character hex-encoded string. The implementation of
+    `os.urandom` varies by system, but you can always supply your own function
+    in your ini file with:
+
+        redis.sessions.id_generator = my_random_id_generator
     """
-    when = time.time()
-    period = 1
-    this_period = int(when - (when % period))
-    rand = random.randint(0, 99999999)
-    global _CURRENT_PERIOD
-    if this_period != _CURRENT_PERIOD:
-        _CURRENT_PERIOD = this_period
-    source = to_binary('%s%s%s' % (rand, when, pid))
-    session_id = sha1(source).hexdigest()
-    return session_id
+    rand = os.urandom(20)
+    return sha256(sha256(rand).digest()).hexdigest()
+
 
 def prefixed_id(prefix='session:'):
     """
