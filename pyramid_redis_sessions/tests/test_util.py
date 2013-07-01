@@ -115,7 +115,7 @@ class Test__generate_session_id(unittest.TestCase):
     def test_it(self):
         inst = self._makeOne()
         result = inst()
-        self.assertEqual(len(result), 40)
+        self.assertEqual(len(result), 64)
 
 class Test_prefixed_id(unittest.TestCase):
     def _makeOne(self):
@@ -125,7 +125,7 @@ class Test_prefixed_id(unittest.TestCase):
     def test_it(self):
         inst = self._makeOne()
         result = inst('prefix')
-        self.assertEqual(len(result), 46)
+        self.assertEqual(len(result), 70)
         self.assertEqual(result[:6], 'prefix')
 
 
