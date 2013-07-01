@@ -56,3 +56,9 @@ Changelog
                Reference: https://www.owasp.org/index.php/HttpOnly
 
 
+             Session ID generation: session IDs are now generated with an
+               initial value from os.urandom, which (according to the offical
+               python docs) is "suitable for cryptographic use". The previous
+               implementation was concerned primarily with integrity. This
+               update improves on integrity but also adds a greater level of
+               security.
