@@ -8,8 +8,8 @@ from pyramid.exceptions import ConfigurationError
 
 PY3 = sys.version_info[0] == 3
 
-def to_binary(value, enc="UTF-8"):
-    if PY3 and isinstance(value, str): # pragma: no cover
+def to_binary(value, enc="UTF-8"): # pragma: no cover
+    if PY3 and isinstance(value, str):
         value = value.encode(enc)
     return value
 
@@ -44,8 +44,7 @@ def _generate_session_id():
         redis.sessions.id_generator = my_random_id_generator
     """
     rand = os.urandom(20)
-    bytestring = to_binary(sha256(rand).hexdigest())  # for py3 compat
-    return sha256(bytestring).hexdigest()
+    return sha256(sha256(rand).digest()).hexdigest()
 
 
 def prefixed_id(prefix='session:'):
