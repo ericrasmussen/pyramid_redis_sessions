@@ -44,8 +44,8 @@ def _generate_session_id():
         redis.sessions.id_generator = my_random_id_generator
     """
     rand = os.urandom(20)
-    round = to_binary(sha256(rand).hexdigest())  # for py3 compat
-    return sha256(round).hexdigest()
+    bytes = to_binary(sha256(rand).hexdigest())  # for py3 compat
+    return sha256(bytes).hexdigest()
 
 
 def prefixed_id(prefix='session:'):
