@@ -18,7 +18,7 @@ from pyramid.session import (
     signed_deserialize,
 )
 
-def includeme(config): # pragma no cover
+def includeme(config):
     """
     This function is detected by Pyramid so that you can easily include
     `pyramid_redis_sessions` in your `main` method like so::
