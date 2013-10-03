@@ -116,6 +116,10 @@ def _parse_settings(settings):
         value = settings[k]
         options[param] = value
 
+    # only required setting
+    if 'secret' not in options:
+        raise ConfigurationError('redis.sessions.secret is a required setting')
+
     # coerce bools
     for b in ('cookie_secure', 'cookie_httponly', 'cookie_on_exception'):
         if b in options:
@@ -134,10 +138,6 @@ def _parse_settings(settings):
     if 'prefix' in options and 'id_generator' in options:
         err = 'cannot specify custom id_generator and a key prefix'
         raise ConfigurationError(err)
-
-    # only required setting
-    if 'secret' not in options:
-        raise ConfigurationError('redis.sessions.secret is a required setting')
 
     # convenience setting for overriding key prefixes
     if 'prefix' in options:
