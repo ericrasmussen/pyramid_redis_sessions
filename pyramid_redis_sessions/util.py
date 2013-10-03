@@ -104,10 +104,7 @@ def _parse_settings(settings):
     Convenience function to collect settings prefixed by 'redis.sessions' and
     coerce settings to ``int``, ``float``, and ``bool`` as needed.
     """
-    keys = filter(
-        lambda s: s.startswith('redis.sessions.'),
-        settings
-        )
+    keys = [s for s in settings if s.startswith('redis.sessions.')]
 
     options = {}
 
@@ -115,6 +112,10 @@ def _parse_settings(settings):
         param = k.split('.')[-1]
         value = settings[k]
         options[param] = value
+
+    # only required setting
+    if 'secret' not in options:
+        raise ConfigurationError('redis.sessions.secret is a required setting')
 
     # coerce bools
     for b in ('cookie_secure', 'cookie_httponly', 'cookie_on_exception'):
@@ -134,10 +135,6 @@ def _parse_settings(settings):
     if 'prefix' in options and 'id_generator' in options:
         err = 'cannot specify custom id_generator and a key prefix'
         raise ConfigurationError(err)
-
-    # only required setting
-    if 'secret' not in options:
-        raise ConfigurationError('redis.sessions.secret is a required setting')
 
     # convenience setting for overriding key prefixes
     if 'prefix' in options:
