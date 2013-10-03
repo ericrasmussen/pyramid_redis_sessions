@@ -187,15 +187,8 @@ def RedisSessionFactory(
         else:
             redis = get_default_connection(request, url=url, **redis_options)
 
-        session_id = None
-        cookieval = request.cookies.get(cookie_name)
-
-        # if we found a cookie, try to obtain the signed `session_id`
-        if cookieval is not None:
-            try:
-                session_id = signed_deserialize(cookieval, secret)
-            except ValueError:
-                pass
+        # attempt to retrieve a session_id from the cookie
+        session_id = session_id_from_cookie(request, cookie_name, secret)
 
         def add_cookie(session_key):
             def set_cookie_callback(request, response):
@@ -259,3 +252,20 @@ def RedisSessionFactory(
 
     return factory
 
+
+def session_id_from_cookie(request, cookie_name, secret):
+    """
+    Attempts to retrieve and return a session ID from a session cookie in the
+    current request. Returns None if the cookie isn't found or the signed secret
+    is bad.
+    """
+    cookieval = request.cookies.get(cookie_name)
+
+    if cookieval is not None:
+        try:
+            session_id = signed_deserialize(cookieval, secret)
+            return session_id
+        except ValueError:
+            pass
+
+    return None
