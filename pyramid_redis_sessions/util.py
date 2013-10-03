@@ -104,10 +104,7 @@ def _parse_settings(settings):
     Convenience function to collect settings prefixed by 'redis.sessions' and
     coerce settings to ``int``, ``float``, and ``bool`` as needed.
     """
-    keys = filter(
-        lambda s: s.startswith('redis.sessions.'),
-        settings
-        )
+    keys = [s for s in settings if s.startswith('redis.sessions.')]
 
     options = {}
 
