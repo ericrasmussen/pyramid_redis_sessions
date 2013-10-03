@@ -33,7 +33,8 @@ def includeme(config): # pragma no cover
     settings = config.registry.settings
 
     # special rule for converting dotted python paths to callables
-    for option in ('custom_connect', 'encode', 'decode', 'id_generator'):
+    for option in ('client_callable', 'serialize', 'deserialize',
+                   'id_generator'):
         key = 'redis.sessions.%s' % option
         if key in settings:
             settings[key] = config.maybe_dotted(settings[key])
