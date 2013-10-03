@@ -207,7 +207,7 @@ def RedisSessionFactory(
                 For all other cases the cookie will be set normally.
                 """
                 exc = getattr(request, 'exception', None)
-                if exc is not None and cookie_on_exception == False:
+                if exc is not None and cookie_on_exception is False:
                     return
                 cookieval = signed_serialize(session_key, secret)
                 response.set_cookie(
