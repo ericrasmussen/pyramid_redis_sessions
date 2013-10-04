@@ -187,9 +187,6 @@ def RedisSessionFactory(
         else:
             redis = get_default_connection(request, url=url, **redis_options)
 
-        # attempt to retrieve a session_id from the cookie
-        session_id = session_id_from_cookie(request, cookie_name, secret)
-
         def add_cookie(session_key):
             def set_cookie_callback(request, response):
                 """
@@ -220,34 +217,30 @@ def RedisSessionFactory(
             request.add_response_callback(set_cookie_callback)
             return
 
-        # attempt to find the session in redis by `session_id`
-        session_check = redis.get(session_id)
+        # attempt to retrieve a session_id from the cookie
+        session_id = session_id_from_cookie(request, cookie_name, secret)
 
-        # if the signed session from the cookie exists in redis, load it
-        if session_check is not None:
-            session = RedisSession(
-                redis,
-                session_id,
-                timeout,
-                delete_cookie,
-                serialize=serialize,
-                deserialize=deserialize
-                )
+        is_new_session = redis.get(session_id) is None
 
-        # otherwise start over with a new session id
-        else:
-            new_id = new_session_id(redis, timeout, serialize,
-                                    generator=id_generator)
-            add_cookie(new_id)
-            session = RedisSession(
-                redis,
-                new_id,
-                timeout,
-                delete_cookie,
-                serialize=serialize,
-                deserialize=deserialize
-                )
-            session._rs_new = True  # flag it as a newly created session
+        # if we couldn't find the session id in redis, create a new one
+        if is_new_session:
+            session_id = new_session_id(redis, timeout, serialize,
+                                        generator=id_generator)
+
+        session = RedisSession(
+            redis,
+            session_id,
+            timeout,
+            delete_cookie,
+            serialize=serialize,
+            deserialize=deserialize
+        )
+
+        # flag new sessions as new and add a cookie with the session id
+        if is_new_session:
+            add_cookie(session_id)
+            session._rs_new = True
+
         return session
 
     return factory
@@ -269,3 +262,4 @@ def session_id_from_cookie(request, cookie_name, secret):
             pass
 
     return None
+
