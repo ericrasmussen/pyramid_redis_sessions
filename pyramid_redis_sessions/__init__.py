@@ -187,7 +187,7 @@ def RedisSessionFactory(
         else:
             redis = get_default_connection(request, url=url, **redis_options)
 
-        # sets an add cookie callback to the request when called
+        # sets an add cookie callback on the request when called
         def add_cookie(session_key):
             def set_cookie_callback(request, response):
                 """
@@ -212,7 +212,7 @@ def RedisSessionFactory(
             request.add_response_callback(set_cookie_callback)
             return
 
-        # sets a delete cookie callback to the request when called
+        # sets a delete cookie callback on the request when called
         def delete_cookie():
             def set_cookie_callback(request, response):
                 response.delete_cookie(cookie_name)
