@@ -26,8 +26,8 @@ Narrative Documentation
 
 Support and Documentation
 =========================
-The official documentation is available at
-http://pyramid_redis_sessions.readthedocs.org.
+The official documentation is available at:
+http://pyramid-redis-sessions.readthedocs.org/en/latest/index.html
 
 You can report bugs or open support requests in the `github issue tracker
 <https://github.com/ericrasmussen/pyramid_redis_sessions/issues>`_, or you can

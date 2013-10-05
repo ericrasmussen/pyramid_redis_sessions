@@ -123,7 +123,7 @@ def RedisSessionFactory(
 
     ``url``
     A connection string for a Redis server, in the format:
-        redis://username:password@localhost:6379/0
+    redis://username:password@localhost:6379/0
     Default: ``None``.
 
     ``host``
@@ -187,16 +187,7 @@ def RedisSessionFactory(
         else:
             redis = get_default_connection(request, url=url, **redis_options)
 
-        session_id = None
-        cookieval = request.cookies.get(cookie_name)
-
-        # if we found a cookie, try to obtain the signed `session_id`
-        if cookieval is not None:
-            try:
-                session_id = signed_deserialize(cookieval, secret)
-            except ValueError:
-                pass
-
+        # sets an add cookie callback on the request when called
         def add_cookie(session_key):
             def set_cookie_callback(request, response):
                 """
@@ -207,7 +198,7 @@ def RedisSessionFactory(
                 For all other cases the cookie will be set normally.
                 """
                 exc = getattr(request, 'exception', None)
-                if exc is not None and cookie_on_exception == False:
+                if exc is not None and cookie_on_exception is False:
                     return
                 cookieval = signed_serialize(session_key, secret)
                 response.set_cookie(
@@ -221,41 +212,56 @@ def RedisSessionFactory(
             request.add_response_callback(set_cookie_callback)
             return
 
+        # sets a delete cookie callback on the request when called
         def delete_cookie():
             def set_cookie_callback(request, response):
                 response.delete_cookie(cookie_name)
             request.add_response_callback(set_cookie_callback)
             return
 
-        # attempt to find the session in redis by `session_id`
-        session_check = redis.get(session_id)
+        # attempt to retrieve a session_id from the cookie
+        session_id = session_id_from_cookie(request, cookie_name, secret)
 
-        # if the signed session from the cookie exists in redis, load it
-        if session_check is not None:
-            session = RedisSession(
-                redis,
-                session_id,
-                timeout,
-                delete_cookie,
-                serialize=serialize,
-                deserialize=deserialize
-                )
+        is_new_session = redis.get(session_id) is None
 
-        # otherwise start over with a new session id
-        else:
-            new_id = new_session_id(redis, timeout, serialize,
-                                    generator=id_generator)
-            add_cookie(new_id)
-            session = RedisSession(
-                redis,
-                new_id,
-                timeout,
-                delete_cookie,
-                serialize=serialize,
-                deserialize=deserialize
-                )
-            session._rs_new = True  # flag it as a newly created session
+        # if we couldn't find the session id in redis, create a new one
+        if is_new_session:
+            session_id = new_session_id(redis, timeout, serialize,
+                                        generator=id_generator)
+
+        session = RedisSession(
+            redis,
+            session_id,
+            timeout,
+            delete_cookie,
+            serialize=serialize,
+            deserialize=deserialize
+        )
+
+        # flag new sessions as new and add a cookie with the session id
+        if is_new_session:
+            add_cookie(session_id)
+            session._rs_new = True
+
         return session
 
     return factory
+
+
+def session_id_from_cookie(request, cookie_name, secret):
+    """
+    Attempts to retrieve and return a session ID from a session cookie in the
+    current request. Returns None if the cookie isn't found or the signed secret
+    is bad.
+    """
+    cookieval = request.cookies.get(cookie_name)
+
+    if cookieval is not None:
+        try:
+            session_id = signed_deserialize(cookieval, secret)
+            return session_id
+        except ValueError:
+            pass
+
+    return None
 
