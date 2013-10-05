@@ -123,7 +123,7 @@ def RedisSessionFactory(
 
     ``url``
     A connection string for a Redis server, in the format:
-        redis://username:password@localhost:6379/0
+    redis://username:password@localhost:6379/0
     Default: ``None``.
 
     ``host``
