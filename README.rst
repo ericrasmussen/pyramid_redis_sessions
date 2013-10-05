@@ -1,45 +1,37 @@
-pyramid_redis_sessions gives you Redis-backed sessions for the Pyramid Web Application Development Framework.
+Overview
+========
 
-The package implements the Pyramid ISession interface (http://docs.pylonsproject.org/projects/pyramid/en/latest/api/interfaces.html#pyramid.interfaces.ISession), and that portion of the API will not change. However, any other implementation-specific methods on the ``RedisSession`` object are subject to change.
+pyramid_redis_sessions is a server-side session library for the Pyramid Web
+Application Development Framework, using Redis for storage. This library
+implements the `Pyramid ISession interface <http://docs.pylonsproject.org/projects/pyramid/en/latest/api/interfaces.html#pyramid.interfaces.ISession>`_.
 
-Patches and feature requests are welcome.
 
-Usage:
+Documentation
+=============
 
-  * $ easy_install pyramid_redis_sessions
-  * In your Pyramid config file (typically development.ini or production.ini), configure the settings (see below)
-  * In your Pyramid application ``main`` function, use either:
+To get up and running as fast as possible, check out the
+`Getting Started <http://pyramid-redis-sessions.readthedocs.org/en/latest/gettingstarted.html>`_
+guide.
 
-      * pyramid.include('pyramid_redis_sessions')
+You can also read the
+`full documentation <http://pyramid-redis-sessions.readthedocs.org/en/latest/index.html>`_
+on Read the Docs.
 
-  * Or:
 
-      * from pyramid_redis_sessions import session_factory_from_settings
-      * session_factory = session_factory_from_settings(settings)
-      * config.set_session_factory(session_factory)
+Support
+=======
 
-You can configure the following settings in your ini file:
+You can report bugs or open feature/support requests in the
+`GitHub issue tracker <https://github.com/ericrasmussen/pyramid_redis_sessions/issues>`_.
 
- * redis.sessions.secret = your_secret
- * redis.sessions.timeout = 1200
- * redis.sessions.period = 300
- * redis.sessions.cookie_name = session
- * redis.sessions.cookie_max_age =
- * redis.sessions.cookie_path = /
- * redis.sessions.cookie_domain =
- * redis.sessions.cookie_secure = False
- * redis.sessions.cookie_httponly = False
- * redis.sessions.cookie_on_exception = True
- * redis.sessions.host = localhost
- * redis.sessions.port = 6379
- * redis.sessions.db = 0
- * redis.sessions.password = None
- * redis.sessions.socket_timeout =
- * redis.sessions.connection_pool =
- * redis.sessions.charset = utf-8
- * redis.sessions.errors = strict
- * redis.sessions.unix_socket_path =
+You can also get live help in #pyramid on irc.freenode.org. My nick is erasmas,
+but if I'm not available you can still typically get support from the many other
+knowledgeable regulars.
 
-Only redis.sessions.secret is required. All other parameters have sensible defaults.
 
-Note: package assumes you have a running Redis instance at the specified host and port.
+License
+=======
+
+pyramid_redis_sessions is available under a FreeBSD-derived license. See
+`LICENSE.txt <https://github.com/ericrasmussen/pyramid_redis_sessions/blob/master/LICENSE.txt>`_
+for details.
