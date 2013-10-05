@@ -91,6 +91,13 @@ this::
         config = Configurator(settings=settings)
         config.include('pyramid_redis_sessions')
 
+Alternately, instead of using the Configurator's ``include`` method, you can
+activate Pyramid by changing your application's ``.ini`` file, use the
+following line:
+
+.. code-block:: ini
+
+   pyramid.includes = pyramid_redis_sessions
 
 The above method is recommended because it's simpler, idiomatic, and still fully
 configurable. It even has the added benefit of automatically resolving dotted
