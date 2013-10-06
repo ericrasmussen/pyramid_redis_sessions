@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 from hashlib import sha256
@@ -17,23 +19,6 @@ def to_unicode(value): # pragma: no cover
     if not PY3:
         value = unicode(value)
     return value
-
-def iterkeys(d, **kw): # pragma: no cover
-    """Return an iterator over the keys of a dictionary."""
-    return iter(getattr(d, _iterkeys)(**kw))
-
-def itervalues(d, **kw): # pragma: no cover
-    """Return an iterator over the values of a dictionary."""
-    return iter(getattr(d, _itervalues)(**kw))
-
-def iteritems(d, **kw): # pragma: no cover
-    """Return an iterator over the (key, value) pairs of a dictionary."""
-    return iter(getattr(d, _iteritems)(**kw))
-
-def iterlists(d, **kw): # pragma: no cover
-    """Return an iterator over the (key, [values]) pairs of a dictionary."""
-    return iter(getattr(d, _iterlists)(**kw))
-
 
 def _generate_session_id():
     """
