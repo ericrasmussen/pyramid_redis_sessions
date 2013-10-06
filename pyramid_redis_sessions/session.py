@@ -1,15 +1,14 @@
+# -*- coding: utf-8 -*-
+
 import os
 import time
 
-try:
-    import cPickle
-except ImportError: # pragma: no cover
-    # python 3 pickle module
-    import pickle as cPickle
 
 import binascii
 from pyramid.compat import text_
 from zope.interface import implementer
+
+from .compat import cPickle
 
 from .util import (
     persist,
