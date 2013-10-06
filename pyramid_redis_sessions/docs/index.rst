@@ -11,6 +11,34 @@ Special thanks to Chris McDonough for the original idea, inspiration, and some
 borrowed code.
 
 
+Why use Redis for your sessions
+===============================
+Redis is fast, widely deployed, and stable. It works best when your data can
+fit in memory, but is configurable and still quite fast when you need to sync
+to disk. There are plenty of existing benchmarks, opinion pieces, and articles
+if you want to learn about its use cases. But for `pyramid_redis_sessions` I'm
+interested in it specifically for these reasons:
+
+* it really is bleeping fast (choose your own expletive)
+* it has a very handy built-in mechanism for setting expirations on keys
+* the watch mechanism is a nice, lightweight alternative to full transactions
+* session data tends to be important but not mission critical, but if it is...
+* it has configurable `persistence <http://redis.io/topics/persistence>`_
+
+
+Why not use Redis for your sessions
+===================================
+
+While Redis is an good and proven technology there are some things to consider
+before using it.
+
+* additional complexity of upkeep of a Redis server
+* if your sessions store data fast that doesn't need to be 100% consistent.
+  (as Redis sync to desic "eventually")
+* when you do not have enough memory to store all the session data for all your
+  user. (Redis can only take as much data as it has memory available)
+
+
 Narrative Documentation
 =======================
 
