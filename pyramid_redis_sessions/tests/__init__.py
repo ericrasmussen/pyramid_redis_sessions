@@ -1,8 +1,7 @@
-try:
-    import cPickle
-except ImportError: # pragma: no cover
-    # py3 pickle module
-    import pickle as cPickle
+# -*- coding: utf-8 -*-
+
+from ..compat import cPickle
+
 
 class DummySession(object):
     def __init__(self, key, redis, timeout=300, serialize=cPickle.dumps):

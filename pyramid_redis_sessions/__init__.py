@@ -1,9 +1,7 @@
-try:
-    import cPickle
-except ImportError: # pragma: no cover
-    # python 3 pickle module
-    import pickle as cPickle
+# -*- coding: utf-8 -*-
 
+
+from .compat import cPickle
 from .session import RedisSession
 
 from .connection import get_default_connection

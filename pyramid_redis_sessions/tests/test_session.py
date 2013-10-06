@@ -1,17 +1,10 @@
-import os
-
-try:
-    import cPickle
-except ImportError: # pragma: no cover
-    # py3 pickle module
-    import pickle as cPickle
+# -*- coding: utf-8 -*-
 
 import unittest
 
-from . import (
-    DummyRedis,
-    DummyPipeline,
-    )
+from ..compat import cPickle
+
+from . import DummyRedis
 
 class TestRedisSession(unittest.TestCase):
     def _makeOne(self, session_id='session.id', timeout=300,

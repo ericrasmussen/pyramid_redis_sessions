@@ -7,5 +7,6 @@
 build/
 dist/
 env*/
+_env*/
 tmp/
 __pycache__
