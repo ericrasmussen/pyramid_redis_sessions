@@ -30,19 +30,16 @@ Redis client from settings and storing the client in Pyramid's
 `registry` for later use. However, you may find yourself wanting extra control
 over how the client is created.
 
-Here are some reason you might want to build your own client:
+Here are some reasons you might want to build your own client callable:
 
-* you want to use StrictRedis instead of Redis from redis-py or maybe your
-  own variation of a redis-py Redis class.
-
-* you need to maintain a pool of clients or periodically recreate   clients
-  based on something in the request as the default assumes it can keep reusing
-  the same client for the life of the running app
+* you want to use your own wrapper or redis-py's Redis instead of StrictRedis
+* you want to choose from multiple Redis instances or modify connection
+  settings based on the current request
 
 To this or other ends, you can specify a dotted python path to a custom
 Redis client callable ::
 
-    redis.sessions.client_callable = app.module.my_connection_thingy
+    redis.sessions.client_callable = app.module.my_connection_getter
 
 If you instantiate the session factory with includeme, Pyramid's `config`
 machinery will follow the dotted path and attempt to return the callable.
