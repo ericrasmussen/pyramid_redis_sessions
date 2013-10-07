@@ -11,32 +11,36 @@ Special thanks to Chris McDonough for the original idea, inspiration, and some
 borrowed code.
 
 
-Why use Redis for your sessions
-===============================
-Redis is fast, widely deployed, and stable. It works best when your data can
-fit in memory, but is configurable and still quite fast when you need to sync
-to disk. There are plenty of existing benchmarks, opinion pieces, and articles
-if you want to learn about its use cases. But for `pyramid_redis_sessions` I'm
-interested in it specifically for these reasons:
+When to Use Redis for Sessions
+==============================
 
-* it really is bleeping fast (choose your own expletive)
-* it has a very handy built-in mechanism for setting expirations on keys
-* the watch mechanism is a nice, lightweight alternative to full transactions
-* session data tends to be important but not mission critical, but if it is...
-* it has configurable `persistence <http://redis.io/topics/persistence>`_
+One of the main benefits of using a persistent store to serve session data is
+separation of concerns. You can tell it what you want it do, ask for what you
+want, and let it work out the details. In particular, Redis has several
+benefits:
+
+* built-in key expiration to automatically clean up expired session data
+* no need for complicated/unpredictable lock handling in our python code
+* a lightweight alternative to full transactions (the watch mechanism)
 
 
-Why not use Redis for your sessions
-===================================
+When Not to Use Redis for Sessions
+==================================
 
-While Redis is an good and proven technology there are some things to consider
-before using it.
+Redis makes a compelling case for session data, but as with any technology
+decision it's important to be aware of the trade-offs. Adding Redis to your
+stack can mean:
 
-* additional complexity of upkeep of a Redis server
-* if your sessions store data fast that doesn't need to be 100% consistent.
-  (as Redis sync to desic "eventually")
-* when you do not have enough memory to store all the session data for all your
-  user. (Redis can only take as much data as it has memory available)
+* additional installation/configuration/maintenance (for the Redis server)
+* speed before consistency (Redis is fast at the cost of syncing *eventually*)
+* the entirety of your session data must fit in memory
+
+Typically these aren't concerns for sessions, because critical data doesn't
+usually belong in a session store. However, in specialized cases where you need
+consistency at the cost of speed, you may consider database-backed
+sessions. Alternatively, if you only ever store less than ~4kb of non-sensitive
+data, cookie-based sessions work nicely without requiring you to add complexity
+to your stack.
 
 
 Narrative Documentation
