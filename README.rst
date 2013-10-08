@@ -6,6 +6,21 @@ Application Development Framework, using Redis for storage. This library
 implements the `Pyramid ISession interface <http://docs.pylonsproject.org/projects/pyramid/en/latest/api/interfaces.html#pyramid.interfaces.ISession>`_.
 
 
+Why Use Redis for Your Sessions
+===============================
+Redis is fast, widely deployed, and stable. It works best when your data can
+fit in memory, but is configurable and still quite fast when you need to sync
+to disk. There are plenty of existing benchmarks, opinion pieces, and articles
+if you want to learn about its use cases. But for `pyramid_redis_sessions`, I'm
+interested in it specifically for these reasons:
+
+* it really is bleeping fast (choose your own expletive)
+* it has a very handy built-in mechanism for setting expirations on keys
+* the watch mechanism is a nice, lightweight alternative to full transactions
+* session data tends to be important but not mission critical, but if it is...
+* it has configurable `persistence <http://redis.io/topics/persistence>`_
+
+
 Documentation
 =============
 

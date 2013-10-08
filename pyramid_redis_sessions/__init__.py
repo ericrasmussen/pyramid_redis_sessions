@@ -1,9 +1,7 @@
-try:
-    import cPickle
-except ImportError: # pragma: no cover
-    # python 3 pickle module
-    import pickle as cPickle
+# -*- coding: utf-8 -*-
 
+
+from .compat import cPickle
 from .session import RedisSession
 
 from .connection import get_default_connection
@@ -220,7 +218,7 @@ def RedisSessionFactory(
             return
 
         # attempt to retrieve a session_id from the cookie
-        session_id = session_id_from_cookie(request, cookie_name, secret)
+        session_id = _session_id_from_cookie(request, cookie_name, secret)
 
         is_new_session = redis.get(session_id) is None
 
@@ -248,7 +246,7 @@ def RedisSessionFactory(
     return factory
 
 
-def session_id_from_cookie(request, cookie_name, secret):
+def _session_id_from_cookie(request, cookie_name, secret):
     """
     Attempts to retrieve and return a session ID from a session cookie in the
     current request. Returns None if the cookie isn't found or the signed secret

@@ -1,10 +1,9 @@
-try:
-    import cPickle
-except ImportError: # pragma: no cover
-    # py3 pickle module
-    import pickle as cPickle
+# -*- coding: utf-8 -*-
+
 import unittest
 from pyramid import testing
+
+from ..compat import cPickle
 
 from . import DummyRedis
 
@@ -57,29 +56,29 @@ class TestRedisSessionFactory(unittest.TestCase):
         import webob
         request = self._make_request()
         request.exception = True
-        session = self._makeOne(request, cookie_on_exception=False)
+        self._makeOne(request, cookie_on_exception=False)
         callbacks = request.response_callbacks
         response = webob.Response()
-        processed_callback = callbacks[0](request, response)
+        callbacks[0](request, response)
         self.assertNotEqual(response.headerlist[-1][0], 'Set-Cookie')
 
     def test_cookie_on_exception_false_no_exception(self):
         import webob
         request = self._make_request()
         request.exception = None
-        session = self._makeOne(request, cookie_on_exception=False)
+        self._makeOne(request, cookie_on_exception=False)
         callbacks = request.response_callbacks
         response = webob.Response()
-        processed_callback = callbacks[0](request, response)
+        callbacks[0](request, response)
         self.assertEqual(response.headerlist[-1][0], 'Set-Cookie')
 
     def test_cookie_callback(self):
         import webob
         request = self._make_request()
-        session = self._makeOne(request)
+        self._makeOne(request)
         callbacks = request.response_callbacks
         response = webob.Response()
-        processed_callback = callbacks[0](request, response)
+        callbacks[0](request, response)
         self.assertEqual(response.headerlist[-1][0], 'Set-Cookie')
 
     def test_delete_cookie(self):

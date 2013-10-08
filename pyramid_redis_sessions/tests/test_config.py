@@ -1,4 +1,5 @@
-from . import DummyRedis
+# -*- coding: utf-8 -*-
+
 import unittest
 from pyramid import testing
 from pyramid.threadlocal import get_current_request

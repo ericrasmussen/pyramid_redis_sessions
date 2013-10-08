@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
+
 import unittest
 
-from . import (
-    DummyRedis,
-    DummySession,
-    )
+from . import DummyRedis
+from . import DummySession
 
 class Test_parse_settings(unittest.TestCase):
     def _makeOne(self, settings):

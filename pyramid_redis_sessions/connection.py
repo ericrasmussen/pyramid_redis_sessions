@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Defines common methods for obtaining a redis connection.
 
