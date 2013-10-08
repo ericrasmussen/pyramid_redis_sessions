@@ -14,10 +14,10 @@ borrowed code.
 When to Use Redis for Sessions
 ==============================
 
-One of the main benefits of using a persistent store to serve session data is
-separation of concerns. You can tell it what you want it do, ask for what you
-want, and let it work out the details. In particular, Redis has several
-benefits:
+Persistent session stores are ideal when you want server side sessions and a
+clean separation of concerns (your code doesn't need to know details as long as
+it knows how to talk to the server). Redis expands on these benefits by giving
+us:
 
 * built-in key expiration to automatically clean up expired session data
 * no need for complicated/unpredictable lock handling in our python code
@@ -31,14 +31,18 @@ Redis makes a compelling case for session data, but as with any technology
 decision it's important to be aware of the trade-offs. Adding Redis to your
 stack can mean:
 
-* additional installation/configuration/maintenance (for the Redis server)
+* time spent installing, configuring, and maintaining a Redis instance
 * speed before consistency (Redis is fast at the cost of syncing *eventually*)
 * the entirety of your session data must fit in memory
 
 Typically these aren't concerns for sessions, because critical data doesn't
-usually belong in a session store. However, in specialized cases where you need
+usually belong in a client session. However, in specialized cases where you need
 consistency at the cost of speed, you may consider database-backed
-sessions. Alternatively, if you only ever store less than ~4kb of non-sensitive
+sessions using a proven database server like
+`PostgreSQL <http://www.postgresql.org/>`_, or possibly
+even `PostgreSQL <http://www.postgresql.org/>`_.
+
+Alternatively, if you only ever store less than ~4kb of non-sensitive
 data, cookie-based sessions work nicely without requiring you to add complexity
 to your stack.
 

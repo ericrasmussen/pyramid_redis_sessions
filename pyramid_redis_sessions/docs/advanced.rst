@@ -9,8 +9,8 @@ at a time not shopping. The session timeout is the physical world equivalent of
 some tough looking security folk that politely escort loiterers from the
 building.
 
-But... one day one of the loiterers might be the store owner, or your grandma,
-or someone you don't want thrown out after a couple of minutes of not shopping.
+But one day the loiterers might be the store owners, or your grandparents,
+or people you don't want thrown out after a couple of minutes of not shopping.
 In the physical world you'd need to spend time training the security team to
 treat those people specially. In `pyramid_redis_sessions`, you only need to
 identify one of these users and call the following method::
@@ -37,7 +37,7 @@ Here are some reasons you might want to build your own client callable:
   settings based on the current request
 
 To this or other ends, you can specify a dotted python path to a custom
-Redis client callable ::
+Redis client callable::
 
     redis.sessions.client_callable = app.module.my_connection_getter
 
@@ -111,4 +111,6 @@ particular UID function, you can specify a callable with::
     redis.sessions.id_generator = some_library.some_uid_generating_function
 
 This is useful when you want to increase security at the cost of performance,
-reduce integrity for greater speed on a small internal app, etc.
+reduce integrity for greater speed on a small internal app, or any other
+specialized tradeoff. But again, unless you have highly specialized
+requirements, please use the default.
