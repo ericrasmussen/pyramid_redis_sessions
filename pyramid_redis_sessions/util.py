@@ -31,7 +31,6 @@ def _generate_session_id():
     rand = os.urandom(20)
     return sha256(sha256(rand).digest()).hexdigest()
 
-
 def prefixed_id(prefix='session:'):
     """
     Adds a prefix to the unique session id, for cases where you want to
