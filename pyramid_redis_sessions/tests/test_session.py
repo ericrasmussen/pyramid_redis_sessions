@@ -211,7 +211,7 @@ class TestRedisSession(unittest.TestCase):
         inst['key'] = 'val'
         session_id = inst.session_id
         inst.invalidate()
-        self.assertNotIn('key', inst)
+        self.assertDictEqual(dict(inst), {})
         self.assertNotIn(session_id, inst.redis.store)
 
     def test_mutablevalue_changed(self):
