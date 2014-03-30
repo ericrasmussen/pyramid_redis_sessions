@@ -36,6 +36,10 @@ class DummyRedis(object):
     def set(self, key, value):
         self.store[key] = value
 
+    def delete(self, *keys):
+        for key in keys:
+            del self.store[key]
+
     def expire(self, key, timeout):
         self.timeouts[key] = timeout
 
