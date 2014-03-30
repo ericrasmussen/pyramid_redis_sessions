@@ -206,11 +206,13 @@ class TestRedisSession(unittest.TestCase):
         inst._rs_new = True
         self.assertTrue(inst.new)
 
-    def test_invalidate_dict(self):
+    def test_invalidate(self):
         inst = self._makeOne()
         inst['key'] = 'val'
+        session_id = inst.session_id
         inst.invalidate()
         self.assertNotIn('key', inst)
+        self.assertNotIn(session_id, inst.redis.store)
 
     def test_mutablevalue_changed(self):
         inst = self._makeOne()
