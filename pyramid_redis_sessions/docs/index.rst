@@ -39,8 +39,7 @@ Typically these aren't concerns for sessions, because critical data doesn't
 usually belong in a client session. However, in specialized cases where you need
 consistency at the cost of speed, you may consider database-backed
 sessions using a proven database server like
-`PostgreSQL <http://www.postgresql.org/>`_, or possibly
-even `PostgreSQL <http://www.postgresql.org/>`_.
+`PostgreSQL <http://www.postgresql.org/>`_.
 
 Alternatively, if you only ever store less than ~4kb of non-sensitive
 data, cookie-based sessions work nicely without requiring you to add complexity
