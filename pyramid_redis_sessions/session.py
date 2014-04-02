@@ -196,6 +196,7 @@ class RedisSession(object):
     def invalidate(self):
         """ Delete all keys unique to this session and expire cookie."""
         self.clear()
+        self.redis.delete(self.session_id)
         self.delete_cookie()
 
     def new_csrf_token(self):
