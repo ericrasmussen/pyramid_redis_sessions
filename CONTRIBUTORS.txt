@@ -3,3 +3,4 @@ People who have kindly contributed to pyramid_redis_sessions:
 Chris McDonough (March 2012)
 Joe Dallago (January 2013)
 Ch. König (March 2013)
+Ira Lun (April 2014)
