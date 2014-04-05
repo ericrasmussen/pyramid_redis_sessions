@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 from hashlib import sha256
 from functools import partial
 from pyramid.settings import asbool
@@ -46,8 +47,8 @@ def _insert_session_id_if_unique(
     session_id,
     serialize,
     ):
-    """ Attempt to insert a given ``session_id`` and return the succesful id or
-    ``None``."""
+    """ Attempt to insert a given ``session_id`` and return the successful id
+    or ``None``."""
     with redis.pipeline() as pipe:
         try:
             pipe.watch(session_id)
@@ -55,8 +56,9 @@ def _insert_session_id_if_unique(
             if value is not None:
                 return None
             pipe.multi()
-            empty_session = serialize({})
-            pipe.set(session_id, empty_session)
+            empty_session = {}
+            created = time.time()
+            pipe.set(session_id, serialize((empty_session, created)))
             pipe.expire(session_id, timeout)
             pipe.execute()
             return session_id

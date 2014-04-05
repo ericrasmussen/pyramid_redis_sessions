@@ -10,9 +10,10 @@ class DummySession(object):
         self.timeout = timeout
         self.serialize = serialize
         self.working_dict = {}
+        self.created = float()
 
     def to_redis(self):
-        return self.serialize(self.working_dict)
+        return self.serialize((self.working_dict, self.created))
 
 
 class DummyRedis(object):

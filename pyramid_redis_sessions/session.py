@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import time
 
 
 import binascii
@@ -76,8 +75,7 @@ class RedisSession(object):
         self.serialize = serialize
         self.deserialize = deserialize
         self.delete_cookie = delete_cookie
-        self.created = time.time()
-        self.managed_dict = self.from_redis()
+        self.managed_dict, self.created = self.from_redis()
         self.default_timeout = timeout
 
     @property
@@ -85,14 +83,14 @@ class RedisSession(object):
         return self.managed_dict.get('_rs_timeout', self.default_timeout)
 
     def to_redis(self):
-        """ Serialize this session's ``managed_dict`` for storage in Redis.
-        Primarily used by the ``@persist`` decorator to save the current session
-        state to Redis.
-        """
-        return self.serialize(self.managed_dict)
+        """ Serialize a tuple of ``(self.managed_dict, self.created)`` for this
+        session, for storage in Redis.  Primarily used by the ``@persist``
+        decorator to save the current session state to Redis."""
+        return self.serialize((self.managed_dict, self.created))
 
     def from_redis(self):
-        """ Get this session's pickled/serialized ``dict`` from Redis."""
+        """ Get and deserialize the tuple of ``(self.managed_dict,
+        self.created)`` for this session from Redis."""
         persisted = self.redis.get(self.session_id)
         deserialized = self.deserialize(persisted)
         return deserialized

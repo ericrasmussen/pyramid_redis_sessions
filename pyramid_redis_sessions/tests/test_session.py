@@ -12,7 +12,7 @@ class TestRedisSession(unittest.TestCase):
                  serialize=cPickle.dumps, deserialize=cPickle.loads):
         from ..session import RedisSession
         redis = DummyRedis()
-        redis.set(session_id, serialize({}))
+        redis.set(session_id, serialize(({}, 'created time')))
         return RedisSession(
             redis,
             session_id,
@@ -26,29 +26,29 @@ class TestRedisSession(unittest.TestCase):
         inst = self._makeOne()
         inst['key'] = 'val'
         del inst['key']
-        from_redis = inst.from_redis()
+        session_dict_in_redis = inst.from_redis()[0]
         self.assertNotIn('key', inst)
-        self.assertNotIn('key', from_redis)
+        self.assertNotIn('key', session_dict_in_redis)
 
     def test_setitem(self):
         inst = self._makeOne()
         inst['key'] = 'val'
-        from_redis = inst.from_redis()
+        session_dict_in_redis = inst.from_redis()[0]
         self.assertIn('key', inst)
-        self.assertIn('key', from_redis)
+        self.assertIn('key', session_dict_in_redis)
 
     def test_getitem(self):
         inst = self._makeOne()
         inst['key'] = 'val'
-        from_redis = inst.from_redis()
-        self.assertEqual(inst['key'], from_redis['key'])
+        session_dict_in_redis = inst.from_redis()[0]
+        self.assertEqual(inst['key'], session_dict_in_redis['key'])
 
     def test_contains(self):
         inst = self._makeOne()
         inst['key'] = 'val'
-        from_redis = inst.from_redis()
+        session_dict_in_redis = inst.from_redis()[0]
         self.assert_('key' in inst)
-        self.assert_('key' in from_redis)
+        self.assert_('key' in session_dict_in_redis)
 
     def test_setdefault(self):
         inst = self._makeOne()
@@ -60,8 +60,8 @@ class TestRedisSession(unittest.TestCase):
         inst['key1'] = ''
         inst['key2'] = ''
         inst_keys = inst.keys()
-        from_redis = inst.from_redis()
-        persisted_keys = from_redis.keys()
+        session_dict_in_redis = inst.from_redis()[0]
+        persisted_keys = session_dict_in_redis.keys()
         self.assertEqual(inst_keys, persisted_keys)
 
     def test_items(self):
@@ -69,33 +69,33 @@ class TestRedisSession(unittest.TestCase):
         inst['a'] = 1
         inst['b'] = 2
         inst_items = inst.items()
-        from_redis = inst.from_redis()
-        persisted_items = from_redis.items()
+        session_dict_in_redis = inst.from_redis()[0]
+        persisted_items = session_dict_in_redis.items()
         self.assertEqual(inst_items, persisted_items)
 
     def test_clear(self):
         inst = self._makeOne()
         inst['a'] = 1
         inst.clear()
-        from_redis = inst.from_redis()
+        session_dict_in_redis = inst.from_redis()[0]
         self.assertNotIn('a', inst)
-        self.assertNotIn('a', from_redis)
+        self.assertNotIn('a', session_dict_in_redis)
 
     def test_get(self):
         inst = self._makeOne()
         inst['key'] = 'val'
         get_from_inst = inst.get('key')
         self.assertEqual(get_from_inst, 'val')
-        from_redis = inst.from_redis()
-        get_from_redis = from_redis.get('key')
+        session_dict_in_redis = inst.from_redis()[0]
+        get_from_redis = session_dict_in_redis.get('key')
         self.assertEqual(get_from_inst, get_from_redis)
 
     def test_get_default(self):
         inst = self._makeOne()
         get_from_inst = inst.get('key', 'val')
         self.assertEqual(get_from_inst, 'val')
-        from_redis = inst.from_redis()
-        get_from_redis = from_redis.get('key', 'val')
+        session_dict_in_redis = inst.from_redis()[0]
+        get_from_redis = session_dict_in_redis.get('key', 'val')
         self.assertEqual(get_from_inst, get_from_redis)
 
     def test_pop(self):
@@ -103,8 +103,8 @@ class TestRedisSession(unittest.TestCase):
         inst['key'] = 'val'
         popped = inst.pop('key')
         self.assertEqual(popped, 'val')
-        from_redis = inst.from_redis()
-        self.assertNotIn('key', from_redis)
+        session_dict_in_redis = inst.from_redis()[0]
+        self.assertNotIn('key', session_dict_in_redis)
 
     def test_pop_default(self):
         inst = self._makeOne()
@@ -118,9 +118,9 @@ class TestRedisSession(unittest.TestCase):
         inst.update(to_be_updated)
         self.assertEqual(inst['a'], 'overriden')
         self.assertEqual(inst['b'], 2)
-        from_redis = inst.from_redis()
-        self.assertEqual(from_redis['a'], 'overriden')
-        self.assertEqual(from_redis['b'], 2)
+        session_dict_in_redis = inst.from_redis()[0]
+        self.assertEqual(session_dict_in_redis['a'], 'overriden')
+        self.assertEqual(session_dict_in_redis['b'], 2)
 
     def test_iter(self):
         inst = self._makeOne()
@@ -179,8 +179,8 @@ class TestRedisSession(unittest.TestCase):
         popped = inst.popitem()
         options = [('a', 1), ('b', 2)]
         self.assertIn(popped, options)
-        from_redis = inst.from_redis()
-        self.assertNotIn(popped, from_redis)
+        session_dict_in_redis = inst.from_redis()[0]
+        self.assertNotIn(popped, session_dict_in_redis)
 
     def test_IDict_instance_conforms(self):
         from zope.interface.verify import verifyObject
@@ -189,13 +189,9 @@ class TestRedisSession(unittest.TestCase):
         verifyObject(IDict, inst)
 
     def test_created(self):
-        import time
-        before = time.time()
         inst = self._makeOne()
-        created = inst.created
-        after = time.time()
-        self.assertLessEqual(before, created)
-        self.assertGreaterEqual(after, created)
+        created = inst.from_redis()[1]
+        self.assertEqual(inst.created, created)
 
     def test_not_new(self):
         inst = self._makeOne()
@@ -220,8 +216,8 @@ class TestRedisSession(unittest.TestCase):
         tmp = inst['a']
         tmp['3'] = 3
         inst.changed()
-        from_redis = inst.from_redis()
-        self.assertEqual(from_redis['a'], {'1':1, '2':2, '3':3})
+        session_dict_in_redis = inst.from_redis()[0]
+        self.assertEqual(session_dict_in_redis['a'], {'1':1, '2':2, '3':3})
 
     def test_csrf_token(self):
         inst = self._makeOne()
