@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 
+import binascii
 import os
 
-
-import binascii
 from pyramid.compat import text_
+from pyramid.interfaces import ISession
 from zope.interface import implementer
 
 from .compat import cPickle
-
 from .util import (
     persist,
     refresh,
     to_unicode,
     )
 
-from pyramid.interfaces import ISession
 
 @implementer(ISession)
 class RedisSession(object):

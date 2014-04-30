@@ -4,12 +4,12 @@ import unittest
 
 from ..compat import cPickle
 
-from . import DummyRedis
 
 class TestRedisSession(unittest.TestCase):
     def _makeOne(self, session_id='session.id', timeout=300,
                  delete_cookie=lambda : None,
                  serialize=cPickle.dumps, deserialize=cPickle.loads):
+        from . import DummyRedis
         from ..session import RedisSession
         redis = DummyRedis()
         redis.set(session_id, serialize(({}, 'created time')))
@@ -183,8 +183,8 @@ class TestRedisSession(unittest.TestCase):
         self.assertNotIn(popped, session_dict_in_redis)
 
     def test_IDict_instance_conforms(self):
-        from zope.interface.verify import verifyObject
         from pyramid.interfaces import IDict
+        from zope.interface.verify import verifyObject
         inst = self._makeOne()
         verifyObject(IDict, inst)
 
@@ -254,8 +254,8 @@ class TestRedisSession(unittest.TestCase):
         self.assertEqual(msgs, [])
 
     def test_ISession_instance_conforms(self):
-        from zope.interface.verify import verifyObject
         from pyramid.interfaces import ISession
+        from zope.interface.verify import verifyObject
         inst = self._makeOne()
         verifyObject(ISession, inst)
 

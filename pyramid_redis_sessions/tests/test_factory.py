@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+
 from pyramid import testing
 
-from ..compat import cPickle
-
-from . import DummyRedis
 
 class TestRedisSessionFactory(unittest.TestCase):
     def _makeOne(self, request, secret='secret', **kw):
@@ -13,6 +11,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         return RedisSessionFactory(secret, **kw)(request)
 
     def _get_session_id(self, request):
+        from ..compat import cPickle
         from ..util import get_unique_session_id
         redis = request.registry._redis_sessions
         session_id = get_unique_session_id(redis, timeout=100,
@@ -24,6 +23,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         return signed_serialize(session_id, secret)
 
     def _make_request(self):
+        from . import DummyRedis
         request = testing.DummyRequest()
         request.registry._redis_sessions = DummyRedis()
         return request
@@ -102,8 +102,8 @@ class TestRedisSessionFactory(unittest.TestCase):
         self.assertNotEqual(session.session_id, session_id)
 
     def test_instance_conforms(self):
-        from zope.interface.verify import verifyObject
         from pyramid.interfaces import ISession
+        from zope.interface.verify import verifyObject
         request = self._make_request()
         inst = self._makeOne(request)
         verifyObject(ISession, inst)
@@ -119,6 +119,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         self.assertEqual(new_session.timeout, 555)
 
     def test_client_callable(self):
+        from . import DummyRedis
         request = self._make_request()
         redis = DummyRedis()
         client_callable = lambda req, **kw: redis

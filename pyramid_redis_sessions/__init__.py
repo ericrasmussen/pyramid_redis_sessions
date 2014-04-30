@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 
-
-from .compat import cPickle
-from .session import RedisSession
-
-from .connection import get_default_connection
-
-from .util import (
-    get_unique_session_id,
-    _generate_session_id,
-)
-
 from pyramid.session import (
     signed_serialize,
     signed_deserialize,
 )
+
+from .compat import cPickle
+from .connection import get_default_connection
+from .session import RedisSession
+from .util import (
+    get_unique_session_id,
+    _generate_session_id,
+    _parse_settings
+)
+
 
 def includeme(config):
     """
@@ -52,7 +51,6 @@ def session_factory_from_settings(settings):
     ``settings``
     A dict of Pyramid application settings
     """
-    from .util import _parse_settings
     options = _parse_settings(settings)
     return RedisSessionFactory(**options)
 

@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
+from functools import partial
+from hashlib import sha256
 import os
 import sys
 import time
-from hashlib import sha256
-from functools import partial
+
+from pyramid.exceptions import ConfigurationError
 from pyramid.settings import asbool
 from redis.exceptions import WatchError
-from pyramid.exceptions import ConfigurationError
+
 
 PY3 = sys.version_info[0] == 3
 
