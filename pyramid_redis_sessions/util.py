@@ -144,8 +144,8 @@ def refresh(wrapped):
 
 def persist(wrapped):
     """
-    Decorator to persist the working session copy in Redis and reset the
-    expire time.
+    Decorator to persist in Redis all the data that needs to be persisted for
+    this session and reset the expire time.
     """
     def wrapped_persist(session, *arg, **kw):
         result = wrapped(session, *arg, **kw)

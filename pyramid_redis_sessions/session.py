@@ -181,7 +181,9 @@ class RedisSession(object):
 
     @persist
     def changed(self):
-        """ Persists the working dict immediately with ``@persist``."""
+        """ Persist all the data that needs to be persisted for this session
+        immediately with ``@persist``.
+        """
         pass
 
     # session methods persist or refresh using above dict methods
