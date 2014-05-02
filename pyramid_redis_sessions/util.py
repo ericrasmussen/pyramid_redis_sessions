@@ -58,9 +58,11 @@ def _insert_session_id_if_unique(
             if value is not None:
                 return None
             pipe.multi()
-            empty_session = {}
-            created = time.time()
-            pipe.set(session_id, serialize((empty_session, created)))
+            pipe.set(session_id, serialize({
+                'managed_dict': {},
+                'created': time.time(),
+                'timeout': timeout,
+                }))
             pipe.expire(session_id, timeout)
             pipe.execute()
             return session_id

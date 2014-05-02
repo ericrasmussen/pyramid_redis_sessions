@@ -73,22 +73,32 @@ class RedisSession(object):
         self.serialize = serialize
         self.deserialize = deserialize
         self.delete_cookie = delete_cookie
-        self.managed_dict, self.created = self.from_redis()
+        from_redis = self.from_redis()
+        self.managed_dict = from_redis['managed_dict']
+        self.created = from_redis['created']
+        self._timeout = from_redis['timeout']
         self.default_timeout = timeout
 
     @property
     def timeout(self):
-        return self.managed_dict.get('_rs_timeout', self.default_timeout)
+        return self._timeout
 
     def to_redis(self):
-        """ Serialize a tuple of ``(self.managed_dict, self.created)`` for this
-        session, for storage in Redis.  Primarily used by the ``@persist``
-        decorator to save the current session state to Redis."""
-        return self.serialize((self.managed_dict, self.created))
+        """Serialize a dict of the data that needs to be persisted for this
+        session, for storage in Redis.
+
+        Primarily used by the ``@persist`` decorator to save the current
+        session state to Redis.
+        """
+        return self.serialize({
+            'managed_dict': self.managed_dict,
+            'created': self.created,
+            'timeout': self.timeout,
+            })
 
     def from_redis(self):
-        """ Get and deserialize the tuple of ``(self.managed_dict,
-        self.created)`` for this session from Redis."""
+        """Get and deserialize the persisted data for this session from Redis.
+        """
         persisted = self.redis.get(self.session_id)
         deserialized = self.deserialize(persisted)
         return deserialized
@@ -225,10 +235,11 @@ class RedisSession(object):
         return storage
 
     # RedisSession extra methods
+    @persist
     def adjust_timeout_for_session(self, timeout_seconds):
         """
         Permanently adjusts the timeout for this session to ``timeout_seconds``
         for as long as this session is active. Useful in situations where you
         want to change the expire time for a session dynamically.
         """
-        self['_rs_timeout'] = timeout_seconds
+        self._timeout = timeout_seconds

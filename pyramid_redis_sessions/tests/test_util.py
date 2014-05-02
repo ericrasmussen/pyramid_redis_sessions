@@ -71,10 +71,14 @@ class Test__insert_session_id_if_unique(unittest.TestCase):
         before = time.time()
         result = self._makeOne(redis)
         after = time.time()
-        session, created = redis.get('id')
+        persisted = redis.get('id')
+        managed_dict = persisted['managed_dict']
+        created = persisted['created']
+        timeout = persisted['timeout']
+        self.assertDictEqual(managed_dict, {})
         self.assertGreaterEqual(created, before)
         self.assertLessEqual(created, after)
-        self.assertDictEqual(session, {})
+        self.assertEqual(timeout, 1)
         self.assertEqual(result, 'id')
 
     def test_id_not_unique(self):

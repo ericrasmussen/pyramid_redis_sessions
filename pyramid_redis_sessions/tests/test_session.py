@@ -12,7 +12,11 @@ class TestRedisSession(unittest.TestCase):
         from . import DummyRedis
         from ..session import RedisSession
         redis = DummyRedis()
-        redis.set(session_id, serialize(({}, 'created time')))
+        redis.set(session_id, serialize({
+            'managed_dict': {},
+            'created': 60.123456,  # just a number for testing
+            'timeout': timeout
+        }))
         return RedisSession(
             redis,
             session_id,
@@ -26,27 +30,27 @@ class TestRedisSession(unittest.TestCase):
         inst = self._makeOne()
         inst['key'] = 'val'
         del inst['key']
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         self.assertNotIn('key', inst)
         self.assertNotIn('key', session_dict_in_redis)
 
     def test_setitem(self):
         inst = self._makeOne()
         inst['key'] = 'val'
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         self.assertIn('key', inst)
         self.assertIn('key', session_dict_in_redis)
 
     def test_getitem(self):
         inst = self._makeOne()
         inst['key'] = 'val'
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         self.assertEqual(inst['key'], session_dict_in_redis['key'])
 
     def test_contains(self):
         inst = self._makeOne()
         inst['key'] = 'val'
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         self.assert_('key' in inst)
         self.assert_('key' in session_dict_in_redis)
 
@@ -60,7 +64,7 @@ class TestRedisSession(unittest.TestCase):
         inst['key1'] = ''
         inst['key2'] = ''
         inst_keys = inst.keys()
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         persisted_keys = session_dict_in_redis.keys()
         self.assertEqual(inst_keys, persisted_keys)
 
@@ -69,7 +73,7 @@ class TestRedisSession(unittest.TestCase):
         inst['a'] = 1
         inst['b'] = 2
         inst_items = inst.items()
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         persisted_items = session_dict_in_redis.items()
         self.assertEqual(inst_items, persisted_items)
 
@@ -77,7 +81,7 @@ class TestRedisSession(unittest.TestCase):
         inst = self._makeOne()
         inst['a'] = 1
         inst.clear()
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         self.assertNotIn('a', inst)
         self.assertNotIn('a', session_dict_in_redis)
 
@@ -86,7 +90,7 @@ class TestRedisSession(unittest.TestCase):
         inst['key'] = 'val'
         get_from_inst = inst.get('key')
         self.assertEqual(get_from_inst, 'val')
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         get_from_redis = session_dict_in_redis.get('key')
         self.assertEqual(get_from_inst, get_from_redis)
 
@@ -94,7 +98,7 @@ class TestRedisSession(unittest.TestCase):
         inst = self._makeOne()
         get_from_inst = inst.get('key', 'val')
         self.assertEqual(get_from_inst, 'val')
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         get_from_redis = session_dict_in_redis.get('key', 'val')
         self.assertEqual(get_from_inst, get_from_redis)
 
@@ -103,7 +107,7 @@ class TestRedisSession(unittest.TestCase):
         inst['key'] = 'val'
         popped = inst.pop('key')
         self.assertEqual(popped, 'val')
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         self.assertNotIn('key', session_dict_in_redis)
 
     def test_pop_default(self):
@@ -118,7 +122,7 @@ class TestRedisSession(unittest.TestCase):
         inst.update(to_be_updated)
         self.assertEqual(inst['a'], 'overriden')
         self.assertEqual(inst['b'], 2)
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         self.assertEqual(session_dict_in_redis['a'], 'overriden')
         self.assertEqual(session_dict_in_redis['b'], 2)
 
@@ -179,7 +183,7 @@ class TestRedisSession(unittest.TestCase):
         popped = inst.popitem()
         options = [('a', 1), ('b', 2)]
         self.assertIn(popped, options)
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         self.assertNotIn(popped, session_dict_in_redis)
 
     def test_IDict_instance_conforms(self):
@@ -190,8 +194,13 @@ class TestRedisSession(unittest.TestCase):
 
     def test_created(self):
         inst = self._makeOne()
-        created = inst.from_redis()[1]
+        created = inst.from_redis()['created']
         self.assertEqual(inst.created, created)
+
+    def test_timeout(self):
+        inst = self._makeOne()
+        timeout = inst.from_redis()['timeout']
+        self.assertEqual(inst.timeout, timeout)
 
     def test_not_new(self):
         inst = self._makeOne()
@@ -216,7 +225,7 @@ class TestRedisSession(unittest.TestCase):
         tmp = inst['a']
         tmp['3'] = 3
         inst.changed()
-        session_dict_in_redis = inst.from_redis()[0]
+        session_dict_in_redis = inst.from_redis()['managed_dict']
         self.assertEqual(session_dict_in_redis['a'], {'1':1, '2':2, '3':3})
 
     def test_csrf_token(self):
@@ -261,5 +270,7 @@ class TestRedisSession(unittest.TestCase):
 
     def test_adjust_timeout_for_session(self):
         inst = self._makeOne(timeout=100)
-        inst.adjust_timeout_for_session(200)
-        self.assertEqual(inst.timeout, 200)
+        adjusted_timeout = 200
+        inst.adjust_timeout_for_session(adjusted_timeout)
+        self.assertEqual(inst.timeout, adjusted_timeout)
+        self.assertEqual(inst.from_redis()['timeout'], adjusted_timeout)

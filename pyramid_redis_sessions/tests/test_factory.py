@@ -31,7 +31,7 @@ class TestRedisSessionFactory(unittest.TestCase):
     def test_ctor_no_cookie(self):
         request = self._make_request()
         session = self._makeOne(request)
-        session_dict = session.from_redis()[0]
+        session_dict = session.from_redis()['managed_dict']
         self.assertDictEqual(session_dict, {})
 
     def test_ctor_with_cookie_still_valid(self):
