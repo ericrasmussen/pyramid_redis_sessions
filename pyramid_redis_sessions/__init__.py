@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from pyramid.session import (
-    signed_serialize,
     signed_deserialize,
-)
+    signed_serialize,
+    )
 
 from .compat import cPickle
 from .connection import get_default_connection
 from .session import RedisSession
 from .util import (
-    get_unique_session_id,
     _generate_session_id,
-    _parse_settings
-)
+    _parse_settings,
+    get_unique_session_id,
+    )
 
 
 def includeme(config):

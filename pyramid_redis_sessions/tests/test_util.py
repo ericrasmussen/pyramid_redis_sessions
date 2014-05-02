@@ -3,8 +3,11 @@
 import time
 import unittest
 
-from . import DummyRedis
-from . import DummySession
+from . import (
+    DummyRedis,
+    DummySession,
+    )
+
 
 class Test_parse_settings(unittest.TestCase):
     def _makeOne(self, settings):
