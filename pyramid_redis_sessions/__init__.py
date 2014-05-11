@@ -247,8 +247,8 @@ def RedisSessionFactory(
 def _get_session_id_from_cookie(request, cookie_name, secret):
     """
     Attempts to retrieve and return a session ID from a session cookie in the
-    current request. Returns None if the cookie isn't found or the signed secret
-    is bad.
+    current request. Returns None if the cookie isn't found or the value cannot
+    be deserialized for any reason.
     """
     cookieval = request.cookies.get(cookie_name)
 
