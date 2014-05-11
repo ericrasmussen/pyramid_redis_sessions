@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import functools
+
 from pyramid.session import (
     signed_deserialize,
     signed_serialize,
@@ -178,75 +180,71 @@ def RedisSessionFactory(
             )
 
         # an explicit client callable gets priority over the default
-        if client_callable is not None:
-            redis = client_callable(request, **redis_options)
-        else:
-            redis = get_default_connection(request, url=url, **redis_options)
-
-        # sets an add cookie callback on the request when called
-        def add_cookie(session_key):
-            def set_cookie_callback(request, response):
-                """
-                The set cookie callback will first check to see if we're in an
-                exception. If we're in an exception and ``cookie_on_exception``
-                is False, we return immediately before setting the cookie.
-
-                For all other cases the cookie will be set normally.
-                """
-                exc = getattr(request, 'exception', None)
-                # exit early if there's an exception and the user specified
-                # to not set cookies on exception
-                if exc is not None and not cookie_on_exception:
-                    return
-                cookieval = signed_serialize(session_key, secret)
-                response.set_cookie(
-                    cookie_name,
-                    value=cookieval,
-                    max_age=cookie_max_age,
-                    domain=cookie_domain,
-                    secure=cookie_secure,
-                    httponly=cookie_httponly,
-                    )
-            request.add_response_callback(set_cookie_callback)
-            return
-
-        # sets a delete cookie callback on the request when called
-        def delete_cookie():
-            def set_cookie_callback(request, response):
-                response.delete_cookie(cookie_name)
-            request.add_response_callback(set_cookie_callback)
-            return
+        redis = client_callable(request, **redis_options) \
+            if client_callable is not None \
+            else get_default_connection(request, url=url, **redis_options)
 
         # attempt to retrieve a session_id from the cookie
-        session_id = _session_id_from_cookie(request, cookie_name, secret)
+        session_id_from_cookie = _get_session_id_from_cookie(
+            request=request,
+            cookie_name=cookie_name,
+            secret=secret,
+            )
 
-        is_new_session = redis.get(session_id) is None
+        new_session = functools.partial(
+            new_session_id,
+            redis=redis,
+            timeout=timeout,
+            serialize=serialize,
+            generator=id_generator,
+            )
 
-        # if we couldn't find the session id in redis, create a new one
-        if is_new_session:
-            session_id = new_session_id(redis, timeout, serialize,
-                                        generator=id_generator)
+        if session_id_from_cookie and redis.exists(session_id_from_cookie):
+            session_id = session_id_from_cookie
+            session_cookie_was_valid = True
+        else:
+            session_id = new_session()
+            session_cookie_was_valid = False
 
         session = RedisSession(
-            redis,
-            session_id,
-            timeout,
-            delete_cookie,
+            redis=redis,
+            session_id=session_id,
+            timeout=timeout,
+            new=not session_cookie_was_valid,
+            new_session=new_session,
             serialize=serialize,
-            deserialize=deserialize
-        )
+            deserialize=deserialize,
+            )
 
-        # flag new sessions as new and add a cookie with the session id
-        if is_new_session:
-            add_cookie(session_id)
-            session._rs_new = True
+        set_cookie = functools.partial(
+            _set_cookie,
+            cookie_domain=cookie_domain,
+            cookie_httponly=cookie_httponly,
+            cookie_max_age=cookie_max_age,
+            cookie_name=cookie_name,
+            cookie_secure=cookie_secure,
+            secret=secret,
+            signed_serialize=signed_serialize,
+            )
+        delete_cookie = functools.partial(
+            _delete_cookie,
+            cookie_name=cookie_name,
+            )
+        cookie_callback = functools.partial(
+            _cookie_callback,
+            session_cookie_was_valid=session_cookie_was_valid,
+            cookie_on_exception=cookie_on_exception,
+            set_cookie=set_cookie,
+            delete_cookie=delete_cookie,
+            )
+        request.add_response_callback(cookie_callback)
 
         return session
 
     return factory
 
 
-def _session_id_from_cookie(request, cookie_name, secret):
+def _get_session_id_from_cookie(request, cookie_name, secret):
     """
     Attempts to retrieve and return a session ID from a session cookie in the
     current request. Returns None if the cookie isn't found or the signed secret
@@ -263,3 +261,53 @@ def _session_id_from_cookie(request, cookie_name, secret):
 
     return None
 
+
+def _set_cookie(
+    request,
+    response,
+    cookie_domain,
+    cookie_httponly,
+    cookie_max_age,
+    cookie_name,
+    cookie_secure,
+    secret,
+    signed_serialize,
+    ):
+    cookieval = signed_serialize(request.session.session_id, secret)
+    response.set_cookie(
+        cookie_name,
+        value=cookieval,
+        max_age=cookie_max_age,
+        domain=cookie_domain,
+        secure=cookie_secure,
+        httponly=cookie_httponly,
+        )
+
+
+def _delete_cookie(response, cookie_name):
+    response.delete_cookie(cookie_name)
+
+
+def _cookie_callback(
+    request,
+    response,
+    session_cookie_was_valid,
+    cookie_on_exception,
+    set_cookie,
+    delete_cookie,
+    ):
+    """Response callback to set the appropriate Set-Cookie header."""
+    session = request.session
+    if session._invalidated:
+        if session_cookie_was_valid:
+            delete_cookie(response=response)
+        return
+    if session.new:
+        if cookie_on_exception is True or request.exception is None:
+            set_cookie(request=request, response=response)
+        elif session_cookie_was_valid:
+            # we don't set the cookie for the new session here as
+            # cookie_on_exception is False and an exception was raised, but we
+            # still need to delete the previous cookie, because the existing
+            # session that the request started with was invalidated.
+            delete_cookie(response=response)

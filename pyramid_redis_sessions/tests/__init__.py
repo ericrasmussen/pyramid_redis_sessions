@@ -4,8 +4,9 @@ from ..compat import cPickle
 
 
 class DummySession(object):
-    def __init__(self, key, redis, timeout=300, serialize=cPickle.dumps):
-        self.session_id = key
+    def __init__(self, session_id, redis, timeout=300,
+                 serialize=cPickle.dumps):
+        self.session_id = session_id
         self.redis = redis
         self.timeout = timeout
         self.serialize = serialize
@@ -44,6 +45,9 @@ class DummyRedis(object):
     def delete(self, *keys):
         for key in keys:
             del self.store[key]
+
+    def exists(self, key):
+        return key in self.store
 
     def expire(self, key, timeout):
         self.timeouts[key] = timeout

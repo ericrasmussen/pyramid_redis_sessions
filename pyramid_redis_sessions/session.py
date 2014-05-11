@@ -4,6 +4,7 @@ import binascii
 import os
 
 from pyramid.compat import text_
+from pyramid.decorator import reify
 from pyramid.interfaces import ISession
 from zope.interface import implementer
 
@@ -13,6 +14,15 @@ from .util import (
     refresh,
     to_unicode,
     )
+
+
+class _SessionState(object):
+    def __init__(self, session_id, managed_dict, created, timeout, new):
+        self.session_id = session_id
+        self.managed_dict = managed_dict
+        self.created = created
+        self.timeout = timeout
+        self.new = new
 
 
 @implementer(ISession)
@@ -41,13 +51,16 @@ class RedisSession(object):
     and hashes associated with the session.
 
     ``timeout``
-    Keys will be set to expire in ``timeout`` seconds on each read/write
-    access. If keys are not accessed for the duration of a ``timeout``,
-    Redis will remove them.
+    A default timeout in seconds. RedisSession does not use this value itself,
+    but will make it available as the ``.default_timeout`` attribute.
 
-    ``delete_cookie``
-    A function that takes no arguments and returns nothing, but should have the
-    side effect of deleting the session cookie from the ``response`` object.
+    ``new``
+    Boolean. Whether this session is new (whether it was created in this
+    request).
+
+    ``new_session``
+    A function that takes no arguments. It should insert a new session into
+    Redis under a new session_id, and return that session_id.
 
     ``serialize``
     A function to serialize pickleable Python objects. Default:
@@ -63,25 +76,61 @@ class RedisSession(object):
         redis,
         session_id,
         timeout,
-        delete_cookie,
+        new,
+        new_session,
         serialize=cPickle.dumps,
         deserialize=cPickle.loads
         ):
 
-        self.session_id = session_id
         self.redis = redis
         self.serialize = serialize
         self.deserialize = deserialize
-        self.delete_cookie = delete_cookie
-        from_redis = self.from_redis()
-        self.managed_dict = from_redis['managed_dict']
-        self.created = from_redis['created']
-        self._timeout = from_redis['timeout']
+        self._new_session = new_session
         self.default_timeout = timeout
+        self._session_state = self._make_session_state(
+            session_id=session_id,
+            new=new,
+            )
+
+    @reify
+    def _session_state(self):
+        return self._make_session_state(
+            session_id=self._new_session(),
+            new=True,
+            )
+
+    def _make_session_state(self, session_id, new):
+        persisted = self.from_redis(session_id=session_id)
+        # self.from_redis needs to take a session_id here because otherwise it
+        # would look up self.session_id, which is not ready yet because
+        # session_state has not been created yet.
+        return _SessionState(
+            session_id=session_id,
+            managed_dict=persisted['managed_dict'],
+            created=persisted['created'],
+            timeout=persisted['timeout'],
+            new=new,
+            )
+
+    @property
+    def session_id(self):
+        return self._session_state.session_id
+
+    @property
+    def managed_dict(self):
+        return self._session_state.managed_dict
+
+    @property
+    def created(self):
+        return self._session_state.created
 
     @property
     def timeout(self):
-        return self._timeout
+        return self._session_state.timeout
+
+    @property
+    def new(self):
+        return self._session_state.new
 
     def to_redis(self):
         """Serialize a dict of the data that needs to be persisted for this
@@ -96,12 +145,23 @@ class RedisSession(object):
             'timeout': self.timeout,
             })
 
-    def from_redis(self):
+    def from_redis(self, session_id=None):
         """Get and deserialize the persisted data for this session from Redis.
         """
-        persisted = self.redis.get(self.session_id)
+        persisted = self.redis.get(session_id or self.session_id)
         deserialized = self.deserialize(persisted)
         return deserialized
+
+    def invalidate(self):
+        """Delete session_id from Redis, and delete ``self._session_state``.
+
+        Direct or indirect access (via other methods and properties) to
+        ``.session_id``, ``.managed_dict``, ``.created``, ``.timeout`` and
+        ``.new`` (i.e. anything stored in ``self._session_state``) after this
+        will trigger the creation of a new session with a new session_id.
+        """
+        self.redis.delete(self.session_id)
+        del self._session_state
 
     # dict modifying methods decorated with @persist
     @persist
@@ -197,16 +257,6 @@ class RedisSession(object):
         pass
 
     # session methods persist or refresh using above dict methods
-    @property
-    def new(self):
-        return getattr(self, '_rs_new', False)
-
-    def invalidate(self):
-        """ Delete all keys unique to this session and expire cookie."""
-        self.clear()
-        self.redis.delete(self.session_id)
-        self.delete_cookie()
-
     def new_csrf_token(self):
         token = text_(binascii.hexlify(os.urandom(20)))
         self['_csrft_'] = token
@@ -242,4 +292,12 @@ class RedisSession(object):
         for as long as this session is active. Useful in situations where you
         want to change the expire time for a session dynamically.
         """
-        self._timeout = timeout_seconds
+        self._session_state.timeout = timeout_seconds
+
+    @property
+    def _invalidated(self):
+        """
+        Boolean property indicating whether the session is in the state where
+        it has been invalidated but a new session has not been created.
+        """
+        return '_session_state' not in self.__dict__
