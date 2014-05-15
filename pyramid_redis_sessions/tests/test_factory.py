@@ -400,4 +400,4 @@ class TestRedisSessionFactory(unittest.TestCase):
         settings = {'redis.sessions.secret': 'secret',
                     'redis.sessions.timeout': '999'}
         inst = session_factory_from_settings(settings)(request)
-        self.assertEqual(inst.default_timeout, 999)
+        self.assertEqual(inst.timeout, 999)

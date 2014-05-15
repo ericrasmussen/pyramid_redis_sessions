@@ -50,10 +50,6 @@ class RedisSession(object):
     A unique string associated with the session. Used as a prefix for keys
     and hashes associated with the session.
 
-    ``timeout``
-    A default timeout in seconds. RedisSession does not use this value itself,
-    but will make it available as the ``.default_timeout`` attribute.
-
     ``new``
     Boolean. Whether this session is new (whether it was created in this
     request).
@@ -75,7 +71,6 @@ class RedisSession(object):
         self,
         redis,
         session_id,
-        timeout,
         new,
         new_session,
         serialize=cPickle.dumps,
@@ -86,7 +81,6 @@ class RedisSession(object):
         self.serialize = serialize
         self.deserialize = deserialize
         self._new_session = new_session
-        self.default_timeout = timeout
         self._session_state = self._make_session_state(
             session_id=session_id,
             new=new,

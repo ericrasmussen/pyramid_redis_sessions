@@ -209,7 +209,6 @@ def RedisSessionFactory(
         session = RedisSession(
             redis=redis,
             session_id=session_id,
-            timeout=timeout,
             new=not session_cookie_was_valid,
             new_session=new_session,
             serialize=serialize,

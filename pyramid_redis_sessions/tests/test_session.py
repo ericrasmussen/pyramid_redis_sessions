@@ -8,13 +8,12 @@ from ..compat import cPickle
 
 
 class TestRedisSession(unittest.TestCase):
-    def _makeOne(self, redis, session_id, timeout, new, new_session,
+    def _makeOne(self, redis, session_id, new, new_session,
                  serialize=cPickle.dumps, deserialize=cPickle.loads):
         from ..session import RedisSession
         return RedisSession(
             redis=redis,
             session_id=session_id,
-            timeout=timeout,
             new=new,
             new_session=new_session,
             serialize=serialize,
@@ -56,7 +55,6 @@ class TestRedisSession(unittest.TestCase):
         return self._makeOne(
             redis=redis,
             session_id=session_id,
-            timeout=timeout,
             new=new,
             new_session=new_session,
             )
@@ -73,7 +71,6 @@ class TestRedisSession(unittest.TestCase):
         self.assertEqual(inst.session_id, session_id)
         self.assertIs(inst.new, new)
         self.assertDictEqual(dict(inst), {})
-        self.assertEqual(inst.default_timeout, timeout)
 
     def test_init_existing_session(self):
         session_id = 'session_id'
@@ -89,7 +86,6 @@ class TestRedisSession(unittest.TestCase):
         self.assertEqual(inst.session_id, session_id)
         self.assertIs(inst.new, new)
         self.assertDictEqual(dict(inst), session_dict)
-        self.assertEqual(inst.default_timeout, timeout)
 
     def test_delitem(self):
         inst = self._set_up_session_in_Redis_and_makeOne()
