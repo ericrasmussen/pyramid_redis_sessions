@@ -219,6 +219,7 @@ def RedisSessionFactory(
             _set_cookie,
             cookie_name=cookie_name,
             cookie_max_age=cookie_max_age,
+            cookie_path=cookie_path,
             cookie_domain=cookie_domain,
             cookie_secure=cookie_secure,
             cookie_httponly=cookie_httponly,
@@ -227,6 +228,7 @@ def RedisSessionFactory(
         delete_cookie = functools.partial(
             _delete_cookie,
             cookie_name=cookie_name,
+            cookie_path=cookie_path,
             )
         cookie_callback = functools.partial(
             _cookie_callback,
@@ -265,6 +267,7 @@ def _set_cookie(
     response,
     cookie_name,
     cookie_max_age,
+    cookie_path,
     cookie_domain,
     cookie_secure,
     cookie_httponly,
@@ -275,14 +278,15 @@ def _set_cookie(
         cookie_name,
         value=cookieval,
         max_age=cookie_max_age,
+        path=cookie_path,
         domain=cookie_domain,
         secure=cookie_secure,
         httponly=cookie_httponly,
         )
 
 
-def _delete_cookie(response, cookie_name):
-    response.delete_cookie(cookie_name)
+def _delete_cookie(response, cookie_name, cookie_path):
+    response.delete_cookie(cookie_name, path=cookie_path)
 
 
 def _cookie_callback(
