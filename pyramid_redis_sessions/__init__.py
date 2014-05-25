@@ -223,7 +223,6 @@ def RedisSessionFactory(
             cookie_name=cookie_name,
             cookie_secure=cookie_secure,
             secret=secret,
-            signed_serialize=signed_serialize,
             )
         delete_cookie = functools.partial(
             _delete_cookie,
@@ -270,7 +269,6 @@ def _set_cookie(
     cookie_name,
     cookie_secure,
     secret,
-    signed_serialize,
     ):
     cookieval = signed_serialize(request.session.session_id, secret)
     response.set_cookie(
