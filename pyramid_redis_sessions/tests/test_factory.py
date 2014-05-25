@@ -10,6 +10,13 @@ class TestRedisSessionFactory(unittest.TestCase):
         from .. import RedisSessionFactory
         return RedisSessionFactory(secret, **kw)(request)
 
+    def _assert_is_a_header_to_set_cookie(self, header_value):
+        # The negative assertion below is the least complicated option for
+        # asserting that a Set-Cookie header sets a cookie rather than deletes
+        # a cookie. This helper method is to help make that intention clearer
+        # in the tests.
+        self.assertNotIn('Max-Age=0', header_value)
+
     def _get_session_id(self, request):
         from ..compat import cPickle
         from ..util import get_unique_session_id
@@ -85,8 +92,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.response_callbacks[0](request, response)
         set_cookie_headers = response.headers.getall('Set-Cookie')
         self.assertEqual(len(set_cookie_headers), 1)
-        self.assertIn(self._serialize(request.session.session_id),
-                      set_cookie_headers[0])
+        self._assert_is_a_header_to_set_cookie(set_cookie_headers[0])
 
     def test_new_session_cookie_on_exception_true_exception(self):
         # cookie_on_exception is True by default, exception raised
@@ -98,8 +104,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.response_callbacks[0](request, response)
         set_cookie_headers = response.headers.getall('Set-Cookie')
         self.assertEqual(len(set_cookie_headers), 1)
-        self.assertIn(self._serialize(request.session.session_id),
-                      set_cookie_headers[0])
+        self._assert_is_a_header_to_set_cookie(set_cookie_headers[0])
 
     def test_new_session_cookie_on_exception_false_no_exception(self):
         # cookie_on_exception is False, no exception raised
@@ -110,8 +115,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.response_callbacks[0](request, response)
         set_cookie_headers = response.headers.getall('Set-Cookie')
         self.assertEqual(len(set_cookie_headers), 1)
-        self.assertIn(self._serialize(request.session.session_id),
-                      set_cookie_headers[0])
+        self._assert_is_a_header_to_set_cookie(set_cookie_headers[0])
 
     def test_new_session_cookie_on_exception_false_exception(self):
         # cookie_on_exception is False, exception raised
@@ -145,8 +149,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.response_callbacks[0](request, response)
         set_cookie_headers = response.headers.getall('Set-Cookie')
         self.assertEqual(len(set_cookie_headers), 1)
-        self.assertIn(self._serialize(request.session.session_id),
-                      set_cookie_headers[0])
+        self._assert_is_a_header_to_set_cookie(set_cookie_headers[0])
 
     def test_new_session_session_after_invalidate_coe_True_exception(self):
         # new session -> invalidate() -> new session
@@ -161,8 +164,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.response_callbacks[0](request, response)
         set_cookie_headers = response.headers.getall('Set-Cookie')
         self.assertEqual(len(set_cookie_headers), 1)
-        self.assertIn(self._serialize(request.session.session_id),
-                      set_cookie_headers[0])
+        self._assert_is_a_header_to_set_cookie(set_cookie_headers[0])
 
     def test_new_session_session_after_invalidate_coe_False_no_exception(self):
         # new session -> invalidate() -> new session
@@ -177,8 +179,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.response_callbacks[0](request, response)
         set_cookie_headers = response.headers.getall('Set-Cookie')
         self.assertEqual(len(set_cookie_headers), 1)
-        self.assertIn(self._serialize(request.session.session_id),
-                      set_cookie_headers[0])
+        self._assert_is_a_header_to_set_cookie(set_cookie_headers[0])
 
     def test_new_session_session_after_invalidate_coe_False_exception(self):
         # new session -> invalidate() -> new session
@@ -268,8 +269,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.response_callbacks[0](request, response)
         set_cookie_headers = response.headers.getall('Set-Cookie')
         self.assertEqual(len(set_cookie_headers), 1)
-        self.assertIn(self._serialize(request.session.session_id),
-                      set_cookie_headers[0])
+        self._assert_is_a_header_to_set_cookie(set_cookie_headers[0])
 
     def test_existing_session_session_after_invalidate_coe_True_exception(
         self
@@ -288,8 +288,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.response_callbacks[0](request, response)
         set_cookie_headers = response.headers.getall('Set-Cookie')
         self.assertEqual(len(set_cookie_headers), 1)
-        self.assertIn(self._serialize(request.session.session_id),
-                      set_cookie_headers[0])
+        self._assert_is_a_header_to_set_cookie(set_cookie_headers[0])
 
     def test_existing_session_session_after_invalidate_coe_False_no_exception(
         self
@@ -308,8 +307,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         request.response_callbacks[0](request, response)
         set_cookie_headers = response.headers.getall('Set-Cookie')
         self.assertEqual(len(set_cookie_headers), 1)
-        self.assertIn(self._serialize(request.session.session_id),
-                      set_cookie_headers[0])
+        self._assert_is_a_header_to_set_cookie(set_cookie_headers[0])
 
     def test_existing_session_session_after_invalidate_coe_False_exception(
         self
