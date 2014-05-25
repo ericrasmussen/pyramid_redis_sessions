@@ -217,11 +217,11 @@ def RedisSessionFactory(
 
         set_cookie = functools.partial(
             _set_cookie,
-            cookie_domain=cookie_domain,
-            cookie_httponly=cookie_httponly,
-            cookie_max_age=cookie_max_age,
             cookie_name=cookie_name,
+            cookie_max_age=cookie_max_age,
+            cookie_domain=cookie_domain,
             cookie_secure=cookie_secure,
+            cookie_httponly=cookie_httponly,
             secret=secret,
             )
         delete_cookie = functools.partial(
@@ -263,11 +263,11 @@ def _get_session_id_from_cookie(request, cookie_name, secret):
 def _set_cookie(
     request,
     response,
-    cookie_domain,
-    cookie_httponly,
-    cookie_max_age,
     cookie_name,
+    cookie_max_age,
+    cookie_domain,
     cookie_secure,
+    cookie_httponly,
     secret,
     ):
     cookieval = signed_serialize(request.session.session_id, secret)
