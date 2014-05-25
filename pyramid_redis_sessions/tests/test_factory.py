@@ -29,9 +29,10 @@ class TestRedisSessionFactory(unittest.TestCase):
         from pyramid.session import signed_serialize
         return signed_serialize(session_id, secret)
 
-    def _set_session_cookie(self, request, session_id, secret='secret'):
+    def _set_session_cookie(self, request, session_id, cookie_name='session',
+                            secret='secret'):
         cookieval = self._serialize(session_id, secret=secret)
-        request.cookies['session'] = cookieval
+        request.cookies[cookie_name] = cookieval
 
     def _make_request(self):
         from . import DummyRedis
@@ -77,6 +78,92 @@ class TestRedisSessionFactory(unittest.TestCase):
         session = self._makeOne(request)
         self.assertNotEqual(session.session_id, session_id_in_cookie)
         self.assertIs(session.new, True)
+
+    def test_factory_parameters_used_to_set_cookie(self):
+        import re
+        import webob
+        cookie_name = 'testcookie'
+        cookie_max_age = 300
+        cookie_path = '/path'
+        cookie_domain = 'example.com'
+        cookie_secure = True
+        cookie_httponly = False
+        secret = 'test secret'
+
+        request = self._make_request()
+        session = request.session = self._makeOne(
+            request,
+            cookie_name=cookie_name,
+            cookie_max_age=cookie_max_age,
+            cookie_path=cookie_path,
+            cookie_domain=cookie_domain,
+            cookie_secure=cookie_secure,
+            cookie_httponly=cookie_httponly,
+            secret=secret,
+            )
+        session['key'] = 'value'
+        response = webob.Response()
+        request.response_callbacks[0](request, response)
+        set_cookie_headers = response.headers.getall('Set-Cookie')
+        self.assertEqual(len(set_cookie_headers), 1)
+
+        # Make another response and .set_cookie() using the same values and
+        # settings to get the expected header to compare against
+        response_to_check_against = webob.Response()
+        response_to_check_against.set_cookie(
+            key=cookie_name,
+            value=self._serialize(session_id=request.session.session_id,
+                                  secret=secret),
+            max_age=cookie_max_age,
+            path=cookie_path,
+            domain=cookie_domain,
+            secure=cookie_secure,
+            httponly=cookie_httponly,
+        )
+        expected_header = response_to_check_against.headers.getall(
+            'Set-Cookie')[0]
+        remove_expires_attribute = lambda s: re.sub('Expires ?=[^;]*;', '', s,
+                                                    flags=re.IGNORECASE)
+        self.assertEqual(remove_expires_attribute(set_cookie_headers[0]),
+                         remove_expires_attribute(expected_header))
+        # We have to remove the Expires attributes from each header before the
+        # assert comparison, as we cannot rely on their values to be the same
+        # (one is generated after the other, and may have a slightly later
+        # Expires time). The Expires value does not matter to us as it is
+        # calculated from Max-Age.
+
+    def test_factory_parameters_used_to_delete_cookie(self):
+        import webob
+        cookie_name = 'testcookie'
+        cookie_path = '/path'
+        cookie_domain = 'example.com'
+
+        request = self._make_request()
+        self._set_session_cookie(request=request,
+                                 cookie_name=cookie_name,
+                                 session_id=self._get_session_id(request))
+        session = request.session = self._makeOne(
+            request,
+            cookie_name=cookie_name,
+            cookie_path=cookie_path,
+            cookie_domain=cookie_domain,
+            )
+        session.invalidate()
+        response = webob.Response()
+        request.response_callbacks[0](request, response)
+        set_cookie_headers = response.headers.getall('Set-Cookie')
+        self.assertEqual(len(set_cookie_headers), 1)
+
+        # Make another response and .delete_cookie() using the same values and
+        # settings to get the expected header to compare against
+        response_to_check_against = webob.Response()
+        response_to_check_against.delete_cookie(
+            key=cookie_name,
+            path=cookie_path,
+            domain=cookie_domain,
+            )
+        expected_header = response.headers.getall('Set-Cookie')[0]
+        self.assertEqual(set_cookie_headers[0], expected_header)
 
     # The tests below with names beginning with test_new_session_ test cases
     # where first access to request.session creates a new session, as in
