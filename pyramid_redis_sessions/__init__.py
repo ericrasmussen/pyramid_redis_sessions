@@ -113,7 +113,7 @@ def RedisSessionFactory(
     The 'secure' flag of the session cookie. Default: ``False``.
 
     ``cookie_httponly``
-    The 'httpOnly' flag of the session cookie. Default: ``False``.
+    The 'httpOnly' flag of the session cookie. Default: ``True``.
 
     ``cookie_on_exception``
     If ``True``, set a session cookie even if an exception occurs
