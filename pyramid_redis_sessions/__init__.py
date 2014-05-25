@@ -229,6 +229,7 @@ def RedisSessionFactory(
             _delete_cookie,
             cookie_name=cookie_name,
             cookie_path=cookie_path,
+            cookie_domain=cookie_domain,
             )
         cookie_callback = functools.partial(
             _cookie_callback,
@@ -285,8 +286,8 @@ def _set_cookie(
         )
 
 
-def _delete_cookie(response, cookie_name, cookie_path):
-    response.delete_cookie(cookie_name, path=cookie_path)
+def _delete_cookie(response, cookie_name, cookie_path, cookie_domain):
+    response.delete_cookie(cookie_name, path=cookie_path, domain=cookie_domain)
 
 
 def _cookie_callback(
