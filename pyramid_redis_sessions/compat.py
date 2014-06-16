@@ -4,6 +4,7 @@
 Compatability module for various pythons and environments.
 """
 
+
 try:
     import cPickle
 except ImportError: # pragma: no cover

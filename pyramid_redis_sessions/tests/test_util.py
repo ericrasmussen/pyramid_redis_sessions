@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import time
 import unittest
 
-from . import DummyRedis
-from . import DummySession
+from . import (
+    DummyRedis,
+    DummySession,
+    )
+
 
 class Test_parse_settings(unittest.TestCase):
     def _makeOne(self, settings):
@@ -64,18 +68,32 @@ class Test__insert_session_id_if_unique(unittest.TestCase):
 
     def test_id_is_unique(self):
         redis = DummyRedis()
+        before = time.time()
         result = self._makeOne(redis)
+        after = time.time()
+        persisted = redis.get('id')
+        managed_dict = persisted['managed_dict']
+        created = persisted['created']
+        timeout = persisted['timeout']
+        self.assertDictEqual(managed_dict, {})
+        self.assertGreaterEqual(created, before)
+        self.assertLessEqual(created, after)
+        self.assertEqual(timeout, 1)
         self.assertEqual(result, 'id')
 
     def test_id_not_unique(self):
         redis = DummyRedis()
-        redis.set('id', '')
+        original_value = object()
+        redis.set('id', original_value)
         result = self._makeOne(redis)
+        # assert value under key has not been changed
+        self.assertEqual(redis.get('id'), original_value)
         self.assertEqual(result, None)
 
     def test_watcherror_returns_none(self):
         redis = DummyRedis(raise_watcherror=True)
         result = self._makeOne(redis)
+        self.assertIs(redis.get('id'), None)
         self.assertEqual(result, None)
 
 

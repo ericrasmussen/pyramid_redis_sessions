@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
+from functools import partial
+from hashlib import sha256
 import os
 import sys
-from hashlib import sha256
-from functools import partial
+import time
+
+from pyramid.exceptions import ConfigurationError
 from pyramid.settings import asbool
 from redis.exceptions import WatchError
-from pyramid.exceptions import ConfigurationError
+
 
 PY3 = sys.version_info[0] == 3
 
@@ -46,8 +49,8 @@ def _insert_session_id_if_unique(
     session_id,
     serialize,
     ):
-    """ Attempt to insert a given ``session_id`` and return the succesful id or
-    ``None``."""
+    """ Attempt to insert a given ``session_id`` and return the successful id
+    or ``None``."""
     with redis.pipeline() as pipe:
         try:
             pipe.watch(session_id)
@@ -55,8 +58,11 @@ def _insert_session_id_if_unique(
             if value is not None:
                 return None
             pipe.multi()
-            empty_session = serialize({})
-            pipe.set(session_id, empty_session)
+            pipe.set(session_id, serialize({
+                'managed_dict': {},
+                'created': time.time(),
+                'timeout': timeout,
+                }))
             pipe.expire(session_id, timeout)
             pipe.execute()
             return session_id
@@ -140,8 +146,8 @@ def refresh(wrapped):
 
 def persist(wrapped):
     """
-    Decorator to persist the working session copy in Redis and reset the
-    expire time.
+    Decorator to persist in Redis all the data that needs to be persisted for
+    this session and reset the expire time.
     """
     def wrapped_persist(session, *arg, **kw):
         result = wrapped(session, *arg, **kw)

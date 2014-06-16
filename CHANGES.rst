@@ -71,7 +71,70 @@ Changelog
              this time to 1.0a. Releases will follow a more typical versioning
              model from now on (similar to Pyramid's).
 
+-06/15/2014: * Bug fix: ``RedisSession.created`` was storing and returning the
+               time when the ``RedisSession`` instance was initialised, rather
+               than the time the actual session was first created. This has now
+               been fixed.
+
+             * Bug fix: The ``timeout`` value has been moved out of the session
+               dict, as it is not part of the session (previously it was stored
+               in the session dict under the key ``_rs_timeout``, and would be
+               lost for example when we cleared the session.)
+
+             * **BREAKING CHANGE**: The ``.created`` and ``.timeout``
+               attributes of the session are now serialised and stored in Redis
+               alongside the session dict in another dict. This and the other
+               changes to ``.created`` and ``.timeout`` mean that existing
+               sessions created by previous versions of pyramid_redis_sessions
+               would not work after upgrade. Please check that you are ready
+               for this breaking change before upgrading.
+
+             
+             * Bug fix: The session now supports starting a new session (with a
+               new session_id) within the same request after ``.invalidate()``.
+               (Previously this was not possible, as ``.invalidate()`` cleared
+               the session dict but did not change the session_id, and set a
+               header to delete the cookie that meant any changes to the
+               session after ``.invalidate()`` were lost.)
+             
+               The way ``.invalidate()`` previously handled deleting the cookie
+               also meant that there would be more than one Set-Cookie headers
+               for the same cookie name, which should not happen according to
+               RFC 6265.  This has been fixed to set the one correct Set-Cookie
+               header, and only when it is necessary (for example, a new
+               session that is invalidated in the same request without further
+               access to the session would not need to set any cookie).
+
+               ``.invalidate()`` also now deletes the session from Redis rather
+               than just relying on it to expire.
 
 
+             * Bug fix: The ``cookie_path`` setting had no effect, as it was
+               not being used to set and delete cookie. This has been fixed, we
+               now set and delete cookie with the specified ``cookie_path`` as
+               expected.
+
+             * Bug fix: The ``cookie_domain`` setting value was not being used
+               when setting a header to delete cookie, meaning any cookie with
+               a domain different from the default was not being deleted (as a
+               cookie only gets deleted if the path and domain match the ones
+               used when the cookie was set). This is now fixed.
+
+             * Fixed the default value of the ``cookie_httponly`` setting in
+               the docstring, where the default had previously been changed
+               from False to True but the docstring had not been updated with
+               it. 
 
 
+             * pyramid_redis_sessions has dropped support for Python 2.6 and
+               now requires Python >= 2.7.
+
+
+             Internal (non-API) changes:
+
+             * ``RedisSession``'s ``timeout`` parameter and
+               ``.default_timeout`` attribute have been removed, as they are no
+               longer needed now that the timeout is inserted into Redis by the
+               factory at the beginning of a new session.
+             * Added tests for cookie-related factory parameters.
+             * Organised imports to PEP 8.

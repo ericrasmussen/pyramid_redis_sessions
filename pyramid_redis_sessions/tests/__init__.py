@@ -4,15 +4,21 @@ from ..compat import cPickle
 
 
 class DummySession(object):
-    def __init__(self, key, redis, timeout=300, serialize=cPickle.dumps):
-        self.session_id = key
+    def __init__(self, session_id, redis, timeout=300,
+                 serialize=cPickle.dumps):
+        self.session_id = session_id
         self.redis = redis
         self.timeout = timeout
         self.serialize = serialize
-        self.working_dict = {}
+        self.managed_dict = {}
+        self.created = float()
 
     def to_redis(self):
-        return self.serialize(self.working_dict)
+        return self.serialize({
+            'managed_dict': self.managed_dict,
+            'created': self.created,
+            'timeout': self.timeout,
+            })
 
 
 class DummyRedis(object):
@@ -39,6 +45,9 @@ class DummyRedis(object):
     def delete(self, *keys):
         for key in keys:
             del self.store[key]
+
+    def exists(self, key):
+        return key in self.store
 
     def expire(self, key, timeout):
         self.timeouts[key] = timeout
