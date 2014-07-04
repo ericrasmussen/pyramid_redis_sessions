@@ -71,7 +71,10 @@ Changelog
              this time to 1.0a. Releases will follow a more typical versioning
              model from now on (similar to Pyramid's).
 
--06/15/2014: * Bug fix: ``RedisSession.created`` was storing and returning the
+
+-06/15/2014: Changes for 1.0a2
+
+             * Bug fix: ``RedisSession.created`` was storing and returning the
                time when the ``RedisSession`` instance was initialised, rather
                than the time the actual session was first created. This has now
                been fixed.
@@ -89,14 +92,13 @@ Changelog
                would not work after upgrade. Please check that you are ready
                for this breaking change before upgrading.
 
-             
              * Bug fix: The session now supports starting a new session (with a
                new session_id) within the same request after ``.invalidate()``.
                (Previously this was not possible, as ``.invalidate()`` cleared
                the session dict but did not change the session_id, and set a
                header to delete the cookie that meant any changes to the
                session after ``.invalidate()`` were lost.)
-             
+
                The way ``.invalidate()`` previously handled deleting the cookie
                also meant that there would be more than one Set-Cookie headers
                for the same cookie name, which should not happen according to
@@ -123,12 +125,10 @@ Changelog
              * Fixed the default value of the ``cookie_httponly`` setting in
                the docstring, where the default had previously been changed
                from False to True but the docstring had not been updated with
-               it. 
-
+               it.
 
              * pyramid_redis_sessions has dropped support for Python 2.6 and
                now requires Python >= 2.7.
-
 
              Internal (non-API) changes:
 
@@ -138,3 +138,10 @@ Changelog
                factory at the beginning of a new session.
              * Added tests for cookie-related factory parameters.
              * Organised imports to PEP 8.
+
+             Upstream package issue: redis-py introduced a breaking (and
+             undocumented) API change in redis==2.10 (see
+             https://github.com/andymccurdy/redis-py/issues/510 for
+             details). Pinning to redis<=2.9.1 until getting confirmation on
+             whether it's a bug that will be fixed, or if we'll need to
+             accommodate two different APIs to use newer versions going forward.

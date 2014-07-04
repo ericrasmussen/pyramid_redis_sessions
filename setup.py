@@ -6,7 +6,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 # manage package version
-package_version = '1.0a1'
+package_version = '1.0a2'
 
 
 # get readme and changes
@@ -39,7 +39,7 @@ def main():
             "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3.3",
             ],
-        keywords='pyramid session cache redis',
+        keywords='pyramid session redis',
         author='Eric Rasmussen',
         author_email='eric@chromaticleaves.com',
         url='https://github.com/ericrasmussen/pyramid_redis_sessions',
