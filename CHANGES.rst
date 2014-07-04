@@ -74,6 +74,15 @@ Changelog
 
 -06/15/2014: Changes for 1.0a2
 
+             * **BREAKING CHANGE**: The ``.created`` and ``.timeout`` attributes
+               of the session are now serialized and stored in Redis alongside
+               the session dict in another dict. This and the other changes to
+               ``.created`` and ``.timeout`` means pyramid_redis_sessions>=1.0a2
+               will not be able to deserialize sessions created with
+               pyramid_redis_sessions<1.0a2. No code changes are required, but
+               please be prepared to clear out existing session data prior to
+               upgrading.
+
              * Bug fix: ``RedisSession.created`` was storing and returning the
                time when the ``RedisSession`` instance was initialised, rather
                than the time the actual session was first created. This has now
@@ -83,14 +92,6 @@ Changelog
                dict, as it is not part of the session (previously it was stored
                in the session dict under the key ``_rs_timeout``, and would be
                lost for example when we cleared the session.)
-
-             * **BREAKING CHANGE**: The ``.created`` and ``.timeout``
-               attributes of the session are now serialised and stored in Redis
-               alongside the session dict in another dict. This and the other
-               changes to ``.created`` and ``.timeout`` mean that existing
-               sessions created by previous versions of pyramid_redis_sessions
-               would not work after upgrade. Please check that you are ready
-               for this breaking change before upgrading.
 
              * Bug fix: The session now supports starting a new session (with a
                new session_id) within the same request after ``.invalidate()``.
