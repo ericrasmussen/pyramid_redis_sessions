@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import itertools
 import time
 import unittest
 
@@ -98,19 +99,11 @@ class Test__insert_session_id_if_unique(unittest.TestCase):
 
 
 class Test_get_unique_session_id(unittest.TestCase):
-    def _makeGenerator(self):
-        global x
-        x = 0
-        def gen():
-            global x
-            x += 1
-            return x
-        return gen
-
     def _makeOne(self, redis=DummyRedis(), timeout=300):
         from ..util import get_unique_session_id
         serialize = lambda x: x
-        generator = self._makeGenerator()
+        ids = itertools.count(start=1, step=1)
+        generator = lambda: next(ids)
         return get_unique_session_id(redis, timeout, serialize,
                                      generator=generator)
 
