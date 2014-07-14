@@ -95,8 +95,8 @@ class RedisSession(object):
 
     def _make_session_state(self, session_id, new):
         persisted = self.from_redis(session_id=session_id)
-        # self.from_redis needs to take a session_id here because otherwise it
-        # would look up self.session_id, which is not ready yet because
+        # self.from_redis needs to take a session_id here, because otherwise it
+        # would look up self.session_id, which is not ready yet as
         # session_state has not been created yet.
         return _SessionState(
             session_id=session_id,
@@ -147,15 +147,14 @@ class RedisSession(object):
         return deserialized
 
     def invalidate(self):
-        """Delete session_id from Redis, and delete ``self._session_state``.
-
-        Direct or indirect access (via other methods and properties) to
-        ``.session_id``, ``.managed_dict``, ``.created``, ``.timeout`` and
-        ``.new`` (i.e. anything stored in ``self._session_state``) after this
-        will trigger the creation of a new session with a new session_id.
-        """
+        """Invalidate the session."""
         self.redis.delete(self.session_id)
         del self._session_state
+        # Delete the self._session_state attribute so that direct access to or
+        # indirect access via other methods and properties to .session_id,
+        # .managed_dict, .created, .timeout and .new (i.e. anything stored in
+        # self._session_state) after this will trigger the creation of a new
+        # session with a new session_id.
 
     # dict modifying methods decorated with @persist
     @persist
@@ -292,6 +291,7 @@ class RedisSession(object):
     def _invalidated(self):
         """
         Boolean property indicating whether the session is in the state where
-        it has been invalidated but a new session has not been created.
+        it has been invalidated but a new session has not been created in its
+        place.
         """
         return '_session_state' not in self.__dict__

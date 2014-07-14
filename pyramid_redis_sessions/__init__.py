@@ -308,8 +308,8 @@ def _cookie_callback(
         if cookie_on_exception is True or request.exception is None:
             set_cookie(request=request, response=response)
         elif session_cookie_was_valid:
-            # we don't set the cookie for the new session here as
-            # cookie_on_exception is False and an exception was raised, but we
-            # still need to delete the previous cookie, because the existing
-            # session that the request started with was invalidated.
+            # We don't set a cookie for the new session here (as
+            # cookie_on_exception is False and an exception was raised), but we
+            # still need to delete the existing cookie for the session that the
+            # request started with (as the session has now been invalidated).
             delete_cookie(response=response)
