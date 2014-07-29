@@ -38,6 +38,7 @@ def main():
             "Framework :: Pyramid",
             "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3.3",
+            "Programming Language :: Python :: 3.4",
             ],
         keywords='pyramid session redis',
         author='Eric Rasmussen',
