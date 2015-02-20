@@ -86,6 +86,14 @@ def get_default_connection(request,
         redis_options.pop('host', None)
         redis_options.pop('port', None)
         redis_options.pop('db', None)
+        # the StrictRedis.from_url option no longer takes a socket
+        # argument. instead, sockets should be encoded in the URL if
+        # used. example:
+        #     unix://[:password]@/path/to/socket.sock?db=0
+        redis_options.pop('unix_socket_path', None)
+        # connection pools are also no longer a valid option for
+        # loading via URL
+        redis_options.pop('connection_pool', None)
         redis = redis_client.from_url(url, **redis_options)
     else:
         redis = redis_client(**redis_options)
