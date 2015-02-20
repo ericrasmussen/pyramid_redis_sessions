@@ -146,3 +146,14 @@ Changelog
              details). Pinning to redis<=2.9.1 until getting confirmation on
              whether it's a bug that will be fixed, or if we'll need to
              accommodate two different APIs to use newer versions going forward.
+
+-02/20/2015: Changes for 1.0.1
+
+             * Removed redis-py upper bound to support new versions of redis-py
+
+             * No longer pass unused settings to `StrictRedis.from_url` (no
+               behavior changes since if you were passing in those settings
+               before they were being ignored)
+
+             * Updated to official/stable release version after successful
+               alpha period and in order to support pip installs
