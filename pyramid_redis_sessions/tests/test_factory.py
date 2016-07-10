@@ -158,7 +158,7 @@ class TestRedisSessionFactory(unittest.TestCase):
         # settings to get the expected header to compare against
         response_to_check_against = webob.Response()
         response_to_check_against.delete_cookie(
-            key=cookie_name,
+            cookie_name,
             path=cookie_path,
             domain=cookie_domain,
             )
