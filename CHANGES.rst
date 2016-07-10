@@ -157,3 +157,10 @@ Changelog
 
              * Updated to official/stable release version after successful
                alpha period and in order to support pip installs
+
+-07/10/2016: Changes for 1.1.0
+
+             * Now requires redis-py >= 2.10.0 and fixes deprecation warnings.
+               This does require that you upgrade redis-py (which in turn
+               requires python > 2.5) to install the latest
+               pyramid_redis_sessions

@@ -73,8 +73,8 @@ def RedisSessionFactory(
     password=None,
     socket_timeout=None,
     connection_pool=None,
-    charset='utf-8',
-    errors='strict',
+    encoding='utf-8',
+    encoding_errors='strict',
     unix_socket_path=None,
     client_callable=None,
     serialize=cPickle.dumps,
@@ -162,8 +162,8 @@ def RedisSessionFactory(
 
       socket_timeout
       connection_pool
-      charset
-      errors
+      encoding
+      encoding_errors
       unix_socket_path
     """
     def factory(request, new_session_id=get_unique_session_id):
@@ -174,8 +174,8 @@ def RedisSessionFactory(
             password=password,
             socket_timeout=socket_timeout,
             connection_pool=connection_pool,
-            charset=charset,
-            errors=errors,
+            encoding=encoding,
+            encoding_errors=encoding_errors,
             unix_socket_path=unix_socket_path,
             )
 
