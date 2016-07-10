@@ -73,8 +73,8 @@ def RedisSessionFactory(
     password=None,
     socket_timeout=None,
     connection_pool=None,
-    charset='utf-8',
-    errors='strict',
+    encoding='utf-8',
+    encoding_errors='strict',
     unix_socket_path=None,
     client_callable=None,
     serialize=cPickle.dumps,
@@ -162,8 +162,8 @@ def RedisSessionFactory(
 
       socket_timeout
       connection_pool
-      charset
-      errors
+      encoding
+      encoding_errors
       unix_socket_path
     """
     def factory(request, new_session_id=get_unique_session_id):
@@ -174,8 +174,8 @@ def RedisSessionFactory(
             password=password,
             socket_timeout=socket_timeout,
             connection_pool=connection_pool,
-            charset=charset,
-            errors=errors,
+            encoding=encoding,
+            encoding_errors=encoding_errors,
             unix_socket_path=unix_socket_path,
             )
 
@@ -217,6 +217,7 @@ def RedisSessionFactory(
 
         set_cookie = functools.partial(
             _set_cookie,
+            session,
             cookie_name=cookie_name,
             cookie_max_age=cookie_max_age,
             cookie_path=cookie_path,
@@ -233,6 +234,7 @@ def RedisSessionFactory(
             )
         cookie_callback = functools.partial(
             _cookie_callback,
+            session,
             session_cookie_was_valid=session_cookie_was_valid,
             cookie_on_exception=cookie_on_exception,
             set_cookie=set_cookie,
@@ -264,6 +266,7 @@ def _get_session_id_from_cookie(request, cookie_name, secret):
 
 
 def _set_cookie(
+    session,
     request,
     response,
     cookie_name,
@@ -274,7 +277,11 @@ def _set_cookie(
     cookie_httponly,
     secret,
     ):
-    cookieval = signed_serialize(request.session.session_id, secret)
+    """
+    `session` is via functools.partial
+    `request` and `response` are appended by add_response_callback
+    """
+    cookieval = signed_serialize(session.session_id, secret)
     response.set_cookie(
         cookie_name,
         value=cookieval,
@@ -291,6 +298,7 @@ def _delete_cookie(response, cookie_name, cookie_path, cookie_domain):
 
 
 def _cookie_callback(
+    session,
     request,
     response,
     session_cookie_was_valid,
@@ -298,8 +306,11 @@ def _cookie_callback(
     set_cookie,
     delete_cookie,
     ):
-    """Response callback to set the appropriate Set-Cookie header."""
-    session = request.session
+    """
+    Response callback to set the appropriate Set-Cookie header.
+    `session` is via functools.partial
+    `request` and `response` are appended by add_response_callback
+    """
     if session._invalidated:
         if session_cookie_was_valid:
             delete_cookie(response=response)
