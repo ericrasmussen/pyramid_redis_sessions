@@ -10,3 +10,4 @@ env*/
 _env*/
 tmp/
 __pycache__
+.tox
