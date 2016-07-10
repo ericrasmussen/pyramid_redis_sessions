@@ -164,3 +164,8 @@ Changelog
                This does require that you upgrade redis-py (which in turn
                requires python > 2.5) to install the latest
                pyramid_redis_sessions
+
+             * Sessions are now tracked using the session object instead of
+               assuming there is always one session per request. See
+               https://github.com/ericrasmussen/pyramid_redis_sessions/issues/60
+               for details. Thanks jvanasco!
